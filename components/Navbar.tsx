@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { CreditCard, TrendingDown, Users, DollarSign } from "lucide-react";
-import { EXECUTIVE_OVERVIEW_DATA } from "@/lib/data/dataset";
-import { formatINR, formatNumber } from "@/lib/utils";
+import { CreditCard, TrendingDown, Users, ShieldAlert, Sparkles } from "lucide-react";
+import { FIXED_COHORT_SUMMARY } from "@/lib/data/dataset";
+import { formatNumber } from "@/lib/utils";
 
 interface NavbarProps {
   activeSection: string;
@@ -42,39 +42,39 @@ export default function Navbar({ activeSection, onNavigate }: NavbarProps) {
                 </span>
               </div>
               <p className="text-xs text-slate-400 hidden sm:block">
-                Share of Wallet & Customer Recovery Platform
+                Reward at the Register • Two-Layer Strategy &amp; Controlled Pilot
               </p>
             </div>
           </div>
 
           {/* Key KPI Quick Ticker */}
-          <div className="hidden lg:flex items-center space-x-6">
+          <div className="hidden lg:flex items-center space-x-5">
+            <div className="flex items-center space-x-2 bg-slate-900/80 px-3 py-1.5 rounded-md border border-slate-800">
+              <Users className="w-4 h-4 text-slate-400" />
+              <div className="text-right">
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Fixed Cohort</div>
+                <div className="text-xs font-semibold text-white">
+                  {formatNumber(FIXED_COHORT_SUMMARY.totalCohort)} Cardholders
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center space-x-2 bg-slate-900/80 px-3 py-1.5 rounded-md border border-slate-800">
               <TrendingDown className="w-4 h-4 text-rose-400" />
               <div className="text-right">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">HSIC SoW Change</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Target Decliners (A–D)</div>
                 <div className="text-xs font-semibold text-rose-400">
-                  {EXECUTIVE_OVERVIEW_DATA.hsicSowChange} pp (19.51%)
+                  {formatNumber(FIXED_COHORT_SUMMARY.declinersTotal)} (≥10 pp Drop)
                 </div>
               </div>
             </div>
 
             <div className="flex items-center space-x-2 bg-slate-900/80 px-3 py-1.5 rounded-md border border-slate-800">
-              <Users className="w-4 h-4 text-amber-400" />
+              <Sparkles className="w-4 h-4 text-amber-400" />
               <div className="text-right">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Declining Cohort</div>
-                <div className="text-xs font-semibold text-white">
-                  {formatNumber(EXECUTIVE_OVERVIEW_DATA.decliningCustomersCount)} Cardholders
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2 bg-slate-900/80 px-3 py-1.5 rounded-md border border-slate-800">
-              <DollarSign className="w-4 h-4 text-emerald-400" />
-              <div className="text-right">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Recovery Pool</div>
-                <div className="text-xs font-semibold text-emerald-400">
-                  {formatINR(EXECUTIVE_OVERVIEW_DATA.nonHsicSpendInDecliningCohortFY26)}
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">Core Strategy</div>
+                <div className="text-xs font-bold text-amber-400">
+                  Reward at the Register
                 </div>
               </div>
             </div>
@@ -82,7 +82,7 @@ export default function Navbar({ activeSection, onNavigate }: NavbarProps) {
         </div>
       </div>
 
-      {/* Navigation Bar - 8 exact sections */}
+      {/* Navigation Bar - 8 exact sections in order */}
       <div className="bg-[#0f1d38] border-t border-slate-800/80 overflow-x-auto no-scrollbar">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-1 sm:space-x-2 py-2">

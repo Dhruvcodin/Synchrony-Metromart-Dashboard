@@ -54,7 +54,7 @@ export default function ContractualBenefits() {
         <div className="flex items-center space-x-2 text-xs">
           <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold">
             <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-600" />
-            ₹0 Joining Fee • ₹0 Annual Fee
+            0 Joining Fee • 0 Annual Fee
           </span>
         </div>
       </div>
@@ -172,7 +172,7 @@ export default function ContractualBenefits() {
                   <span>The Prime Upgrade Upsell Opportunity</span>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Non-Prime cardholders spend an average of ₹10,450/year. Upgrading them to Prime increases their Grocery reward rate fivefold (from 1% to 5%) and Electronics threefold (from 1% to 3%), locking in top-of-wallet loyalty.
+                  Non-Prime cardholders spend an average of 10,450 units/year. Upgrading them to Prime increases their Grocery reward rate fivefold (from 1% to 5%) and Electronics threefold (from 1% to 3%), locking in top-of-wallet loyalty.
                 </p>
               </div>
 

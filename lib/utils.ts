@@ -5,14 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatINR(val: number): string {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(val);
+export function formatUnits(val: number): string {
+  if (Math.abs(val) >= 1000000) {
+    return `${(val / 1000000).toFixed(2)}M units`;
+  }
+  return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(val)} units`;
 }
 
 export function formatNumber(val: number): string {
-  return new Intl.NumberFormat("en-IN").format(val);
+  return new Intl.NumberFormat("en-US").format(val);
+}
+
+export function formatINR(val: number): string {
+  return formatUnits(val);
 }

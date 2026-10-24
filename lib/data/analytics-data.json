@@ -11794,5 +11794,308 @@
         "Primary_Segment": "C - Competing Cards"
       }
     ]
+  },
+  "FIXED_COHORT_SUMMARY": {
+    "totalCohort": 20779,
+    "cohortDefinition": "Cardholders with positive total net spend in both FY2025 and FY2026, with active-card eligibility and official case SoW rules applied",
+    "declinersTotal": 8758,
+    "declinersShare": 42.15,
+    "declinersTotalSpendFY26": 120055278,
+    "declinersMeanSpendFY26": 13708,
+    "persistentlyLowTotal": 4830,
+    "persistentlyLowShare": 23.24,
+    "improversTotal": 7191,
+    "improversShare": 34.61
+  },
+  "SIX_CUSTOMER_SEGMENTS": [
+    {
+      "id": "A",
+      "name": "MetroMart Wallet Switchers",
+      "code": "A \u2014 Wallet switchers",
+      "strategyName": "Basket Split",
+      "category": "Decliner (A\u2013D)",
+      "customerCount": 2654,
+      "shareOfCohort": 12.77,
+      "meanSpendFY26": 10948,
+      "totalSpendFY26": 29055992,
+      "sowFY25": 52.9,
+      "sowFY26": 10.0,
+      "declinePp": -42.9,
+      "breakEvenPp": 6.6,
+      "behavior": "HSIC SoW collapsed by 42.9 pp as customers shifted spend heavily into MetroMart Wallet. They view the wallet as frictionless for smaller trips and default to it.",
+      "hypothesis": "A prepaid wallet balance may be spent first, so HSIC is not selected for larger baskets. This is a behavioral hypothesis to test, not proven causality.",
+      "layer1Intervention": "Display Reward Preview on larger baskets (above calculated threshold): \"On this basket, HSIC could earn about X in rewards. Your wallet remains available for small top-ups.\"",
+      "layer2Intervention": "Offer shared capped incentive (0.5% above baseline, max 25 units) to eligible non-responders.",
+      "intervention": "Reward Preview on Baskets + Capped Incentive",
+      "successMetric": "Treatment vs Control uplift in HSIC SoW (Intention-To-Treat).",
+      "guardrail": "Monitor total MetroMart spend per customer and wallet share.",
+      "failAction": "Pool A with B/C for primary test; drop Layer 2 extra incentive if economics do not justify it. Future auto-top-up idea only if approved.",
+      "owner": "MetroMart for placement/wording; HSIC for reward rates/compliance."
+    },
+    {
+      "id": "B",
+      "name": "Cash/UPI Switchers",
+      "code": "B \u2014 Cash/UPI switchers",
+      "strategyName": "One-Tap Habit",
+      "category": "Decliner (A\u2013D)",
+      "customerCount": 2097,
+      "shareOfCohort": 10.09,
+      "meanSpendFY26": 10496,
+      "totalSpendFY26": 22010112,
+      "sowFY25": 50.9,
+      "sowFY26": 9.4,
+      "declinePp": -41.5,
+      "breakEvenPp": 6.9,
+      "behavior": "HSIC SoW dropped by 41.5 pp as payments shifted to Cash/UPI apps at checkout.",
+      "hypothesis": "Habit or checkout speed/friction matters more than reward size. Scanning a QR code feels faster than handling a credit card.",
+      "layer1Intervention": "Post-Cash/UPI order notification: \"This order could have earned about X in HSIC rewards.\" Test a remembered-card option only if MetroMart, issuer, and network confirm feasibility.",
+      "layer2Intervention": "Offer shared capped incentive to eligible non-responders.",
+      "intervention": "Post-Cash Notification + Capped Incentive",
+      "successMetric": "Treatment vs Control SoW uplift and share of customers with 2+ HSIC purchases.",
+      "guardrail": "Track complaints, opt-outs, and responsible-lending indicators defined by Risk.",
+      "failAction": "Retain reminders only if they help; stop below the pre-agreed decision threshold.",
+      "owner": "MetroMart for app/receipt messaging; HSIC for compliance."
+    },
+    {
+      "id": "C",
+      "name": "Competing-Card Switchers",
+      "code": "C \u2014 Competing-card switchers",
+      "strategyName": "Beat the Other Card",
+      "category": "Decliner (A\u2013D)",
+      "customerCount": 2285,
+      "shareOfCohort": 11.0,
+      "meanSpendFY26": 9483,
+      "totalSpendFY26": 21668655,
+      "sowFY25": 50.1,
+      "sowFY26": 11.4,
+      "declinePp": -38.7,
+      "breakEvenPp": 7.6,
+      "behavior": "Customers shifted to Debit Cards and Other Bank Credit Cards. They are multi-cardholders choosing competitor payment instruments.",
+      "hypothesis": "Customers already use cards; the issue is card choice and reward visibility at checkout. Do not assume we know competitor rates.",
+      "layer1Intervention": "Missed Cashback Meter: \"Your eligible purchases paid by another card could have earned about X in HSIC rewards.\"",
+      "layer2Intervention": "Non-Prime non-responders only, subject to risk and margin checks. Do not offer extra rewards on Prime Grocery without confirmed economics.",
+      "intervention": "Missed Cashback Meter + Capped Incentive",
+      "successMetric": "SoW uplift, cost per incremental converter, and incremental net contribution.",
+      "guardrail": "Never encourage borrowing or carrying a balance to earn rewards. Risk and Compliance exclusions applied.",
+      "failAction": "Drop Layer 2; pool C with A/B in primary analysis if separate sample is underpowered.",
+      "owner": "Joint HSIC & MetroMart."
+    },
+    {
+      "id": "D",
+      "name": "High-Value Decliners",
+      "code": "D \u2014 High-value decliners",
+      "strategyName": "Ask First, Then Win Back",
+      "category": "Decliner (A\u2013D)",
+      "customerCount": 1722,
+      "shareOfCohort": 8.29,
+      "meanSpendFY26": 27480,
+      "totalSpendFY26": 47320560,
+      "sowFY25": 61.3,
+      "sowFY26": 12.3,
+      "declinePp": -49.0,
+      "breakEvenPp": 6.0,
+      "behavior": "Top 25% spenders (mean spend 27,480 units) whose HSIC SoW collapsed by 49.0 pp. Generates 39.4% of all decliner spending.",
+      "hypothesis": "Root cause is unknown. Do not assume reward awareness is the cause\u2014it could be customer service friction, credit line constraints, or competitor status.",
+      "layer1Intervention": "Missed Cashback Meter for all 1,722. Conduct personal phone/concierge outreach to the 861 customers with largest spend gap (30 units assumed cost) to record structured reason codes.",
+      "layer2Intervention": "Only when customer does not respond to Layer 1 and reason suggests reward sensitivity. Service/limit issues route to customer operations, not automatic cash rewards.",
+      "intervention": "Cashback Meter + VIP Concierge Phone Outreach",
+      "successMetric": "Recovered HSIC spend vs randomized control and distribution of reason codes.",
+      "guardrail": "Outreach cost (30 units/contact), consent, complaints, and non-negative incremental contribution.",
+      "failAction": "Limit D to Meter and route identified service/limit issues appropriately.",
+      "owner": "HSIC VIP Operations & MetroMart Relationship Management."
+    },
+    {
+      "id": "E",
+      "name": "Persistently Low SoW",
+      "code": "E \u2014 Persistently low SoW",
+      "strategyName": "Introduce the Reward",
+      "category": "Persistently Low (SoW <10%)",
+      "customerCount": 4830,
+      "shareOfCohort": 23.24,
+      "meanSpendFY26": 10915,
+      "totalSpendFY26": 52719450,
+      "sowFY25": 1.2,
+      "sowFY26": 1.4,
+      "declinePp": 0.2,
+      "breakEvenPp": 1.7,
+      "behavior": "Customers who hold an active card but maintained SoW <10% in both FY25 (1.2%) and FY26 (1.4%). Total FY26 spend of 52.72M units.",
+      "hypothesis": "Low observed adoption/awareness, not silent attrition. They shop at MetroMart but have never habituated the card.",
+      "layer1Intervention": "Layer 1 visibility only: Reward Preview and Meter as an awareness/first-use test. NO Layer 2 promotional incentive until visibility effect is evaluated.",
+      "layer2Intervention": "None (Layer 1 only).",
+      "intervention": "Visibility Only: Preview & Meter (No Layer 2)",
+      "successMetric": "Share making a first observed HSIC purchase, treatment vs control SoW uplift, opt-outs.",
+      "guardrail": "Messaging cost capped at 3 units/customer (14,490 units total). Provisional break-even is ~1.7 pp at 1.607% margin.",
+      "failAction": "Stop intervention rather than automatically adding costly incentives.",
+      "owner": "MetroMart In-App CRM & HSIC Card Marketing."
+    },
+    {
+      "id": "Improvers",
+      "name": "Improvers / Stable",
+      "code": "Improvers / stable",
+      "strategyName": "Monitor & Protect",
+      "category": "Organic Growth",
+      "customerCount": 7191,
+      "shareOfCohort": 34.61,
+      "meanSpendFY26": 14779,
+      "totalSpendFY26": 106275789,
+      "sowFY25": 14.3,
+      "sowFY26": 40.5,
+      "declinePp": 26.2,
+      "breakEvenPp": 0.0,
+      "behavior": "Cardholders whose HSIC SoW expanded healthily from 14.3% in FY25 to 40.5% in FY26 (+26.2 pp).",
+      "hypothesis": "Naturally adopting card benefits and appreciating co-brand value proposition.",
+      "layer1Intervention": "No Promotional Offer. Do not pay for behavior that is already improving organically (avoids deadweight cost).",
+      "layer2Intervention": "None.",
+      "intervention": "Organic Growth Monitoring (Zero Offer / Zero Cost)",
+      "successMetric": "Maintain organic retention and watch for attrition early warning signals.",
+      "guardrail": "Monitor using a pre-specified 2-month trigger: a decline of 10 pp over 2 months routes customer to the decliner review flow.",
+      "failAction": "Trigger decliner review flow only if material erosion occurs.",
+      "owner": "Portfolio Analytics & Risk Monitoring."
+    }
+  ],
+  "PILOT_DESIGN": {
+    "timelineStages": [
+      {
+        "stage": "Stage 0: Pre-Pilot Validation",
+        "weeks": "Weeks 0\u20132",
+        "title": "Definitions, Consents & Randomization",
+        "desc": "Validate cohort criteria (20,779 fixed cohort, 8,758 A\u2013D decliners), verify data-sharing permissions, confirm compliance and consent rules, establish stratified 50/50 randomization."
+      },
+      {
+        "stage": "Stage 1: Layer 1 Visibility Test",
+        "weeks": "Weeks 3\u201310",
+        "title": "50/50 Randomized Controlled Trial",
+        "desc": "Randomize A\u2013D cohort 50/50 into uncontacted control vs Layer 1 visibility (Reward Preview on eligible baskets & Missed Cashback Meter). Measure organic response with zero promotional reward spend."
+      },
+      {
+        "stage": "Stage 2: Layer 2 Capped Incentive",
+        "weeks": "Weeks 11\u201318",
+        "title": "Non-Responder Capped Offer Test",
+        "desc": "Among confirmed non-responders with \u22651,500 units pre-period non-HSIC spend, randomize into Layer 2 (0.5% incremental spend above 8-week baseline, max 25 units/cust, max 25k units total cap) vs Control. Retain 20% persistence holdout (~876 customers)."
+      },
+      {
+        "stage": "Stage 3: Post-Campaign Persistence",
+        "weeks": "Weeks 19\u201326",
+        "title": "Persistence & Holdout Evaluation",
+        "desc": "Cease promotional messaging and monitor whether card usage habit persists or reverts to baseline across treated vs holdout vs pure control."
+      }
+    ],
+    "primaryKpi": "Treatment vs Control difference in HSIC Share of Wallet (SoW) evaluated on net spend using Intention-to-Treat (ITT).",
+    "secondaryKpis": [
+      "Incremental HSIC Net Spend (source units)",
+      "Repeat Transaction Frequency (\u22652 HSIC transactions/month)",
+      "Incremental Reward Expense vs Baseline Accrual",
+      "Net Incremental Contribution (Profit after campaign costs)",
+      "Customer Acquisition & Reactivation Cost (CAC)",
+      "Total MetroMart Spend per Customer"
+    ],
+    "preRegisteredGuardrails": [
+      "Total MetroMart spend per customer no more than 1% below control (prevents cannibalization)",
+      "Program opt-outs no more than 2x control",
+      "Product returns on treated purchases no more than 10% above control on a relative basis",
+      "Zero material increase in customer disputes, gaming, or complaints"
+    ],
+    "decisionPathway": {
+      "scaleCriteria": "Statistically significant ITT SoW uplift (p < 0.05), positive incremental net contribution after all costs, and no guardrails breached.",
+      "reviseCriteria": "Promising SoW uplift but inconclusive economics; adjust basket threshold or messaging channel before full rollout.",
+      "stopCriteria": "Negative net economic contribution, material guardrail breach, or elevated opt-outs."
+    }
+  },
+  "FINANCIAL_MODELS_V2": {
+    "unitOfMeasure": "Source Units (official case data does not specify currency)",
+    "cohortSizeAD": 8758,
+    "totalSpendFY26AD": 120055278,
+    "meanSpendFY26AD": 13708,
+    "assumedContributionBeforeRewardsPct": 3.0,
+    "estimatedHsicRewardAccrualRatePct": 1.393,
+    "blendedAssumedMarginAfterRewardsPct": 1.607,
+    "fixedCostUnits": 75000,
+    "messagingCostPerCustomer": 3,
+    "totalMessagingCostUnits": 26274,
+    "outreachCostPerContact": 30,
+    "dOutreachCount": 861,
+    "totalDOutreachCostUnits": 25830,
+    "fullScaleCampaignCostUnits": 127104,
+    "portfolioBreakEvenUnitsPerCustomer": 903,
+    "portfolioBreakEvenPp": 6.6,
+    "segmentBreakEvens": {
+      "A": 6.6,
+      "B": 6.9,
+      "C": 7.6,
+      "D": 6.0,
+      "E": 1.7
+    },
+    "scenarioTableAD": [
+      {
+        "scenario": "+3 pp SoW Lift (Conservative)",
+        "sowLiftPp": 3.0,
+        "incrementalSpend": 3601658,
+        "grossContribution": 57879,
+        "campaignCost": 127104,
+        "netBenefit": -69225,
+        "roiPct": -54.5,
+        "verdict": "Requires higher uplift or lower fixed allocation"
+      },
+      {
+        "scenario": "+5 pp SoW Lift (Midpoint)",
+        "sowLiftPp": 5.0,
+        "incrementalSpend": 6002764,
+        "grossContribution": 96464,
+        "campaignCost": 127104,
+        "netBenefit": -30640,
+        "roiPct": -24.1,
+        "verdict": "Approaching break-even threshold"
+      },
+      {
+        "scenario": "+6.6 pp SoW Lift (Break-Even)",
+        "sowLiftPp": 6.6,
+        "incrementalSpend": 7923648,
+        "grossContribution": 127333,
+        "campaignCost": 127104,
+        "netBenefit": 229,
+        "roiPct": 0.2,
+        "verdict": "Full Portfolio Break-Even achieved"
+      },
+      {
+        "scenario": "+8 pp SoW Lift (Target Target)",
+        "sowLiftPp": 8.0,
+        "incrementalSpend": 9604422,
+        "grossContribution": 154343,
+        "campaignCost": 127104,
+        "netBenefit": 27239,
+        "roiPct": 21.4,
+        "verdict": "Profitable with sustainable positive contribution"
+      }
+    ],
+    "primeCategoryMarginWarning": [
+      {
+        "category": "Non-Prime Purchases (All Categories)",
+        "contractualReward": "1.0% Cashback",
+        "assumedGrossMargin": "3.0%",
+        "netMarginAfterReward": "+2.0%",
+        "status": "Profitable (Viable for Layer 2 incentives)"
+      },
+      {
+        "category": "Prime Other Categories (Apparel, Large Appliances, etc.)",
+        "contractualReward": "1.0% Cashback",
+        "assumedGrossMargin": "3.0%",
+        "netMarginAfterReward": "+2.0%",
+        "status": "Profitable (Viable for Layer 2 incentives)"
+      },
+      {
+        "category": "Prime Electronics (Category 2)",
+        "contractualReward": "3.0% Cashback",
+        "assumedGrossMargin": "3.0%",
+        "netMarginAfterReward": "0.0%",
+        "status": "Break-Even (Strictly no extra reward without co-funding)"
+      },
+      {
+        "category": "Prime Grocery (Category 1)",
+        "contractualReward": "5.0% Cashback",
+        "assumedGrossMargin": "3.0%",
+        "netMarginAfterReward": "-2.0%",
+        "status": "Negative Margin Warning (Finance must validate co-funding before launch)"
+      }
+    ]
   }
 }

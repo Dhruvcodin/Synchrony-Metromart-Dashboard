@@ -7,11 +7,13 @@ import {
   Percent,
   Sliders,
   CheckCircle2,
-  AlertCircle,
+  AlertTriangle,
   HelpCircle,
   Award,
   Layers,
   ArrowRight,
+  ShieldAlert,
+  Info,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -23,416 +25,157 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { CUSTOMER_SEGMENTS } from "@/lib/data/dataset";
-import { formatINR, formatNumber } from "@/lib/utils";
-
-type ScenarioType = "base" | "upside" | "custom";
+import { FINANCIAL_MODELS_V2, FIXED_COHORT_SUMMARY } from "@/lib/data/dataset";
+import { formatNumber, formatUnits } from "@/lib/utils";
 
 export default function FinancialModels() {
-  const [selectedScenario, setSelectedScenario] = useState<ScenarioType>("base");
+  const fin = FINANCIAL_MODELS_V2;
 
-  // Custom Scenario interactive parameters
-  const [customReactivationRate, setCustomReactivationRate] = useState<number>(20); // 20%
-  const [customPromotionalCashback, setCustomPromotionalCashback] = useState<number>(1.5); // 1.5%
-  const [customVoucherAmount, setCustomVoucherAmount] = useState<number>(500); // ₹500
-  const [customContributionMargin, setCustomContributionMargin] = useState<number>(3.0); // 3.0% net interchange/merchant margin
-  const [customCommCost, setCustomCommCost] = useState<number>(10); // ₹10 per customer communication
+  // Interactive Custom Scenario Sliders
+  const [customSowLiftPp, setCustomSowLiftPp] = useState<number>(6.6); // Default to break-even 6.6 pp
+  const [customGrossMarginPct, setCustomGrossMarginPct] = useState<number>(3.0); // 3.0%
+  const [customRewardAccrualPct, setCustomRewardAccrualPct] = useState<number>(1.393); // 1.393%
+  const [customFixedCost, setCustomFixedCost] = useState<number>(75000); // 75k units
+  const [customMsgCostPerCust, setCustomMsgCostPerCust] = useState<number>(3); // 3 units
+  const [customDOutreachCost, setCustomDOutreachCost] = useState<number>(30); // 30 units
 
-  // Scenarios parameter definitions
-  const scenarioConfigs = {
-    base: {
-      name: "Base Case (Conservative)",
-      desc: "Moderate reactivation assumptions, standard incentive uptake, and cautious migration",
-      reactivationRates: { A: 0.15, B: 0.15, C: 0.20, D: 0.20 }, // 15% to 20%
-      promoCashbackPct: { A: 0.015, B: 0.015, C: 0.02, D: 0.02 }, // 1.5% - 2%
-      vouchers: { A: 0, B: 0, C: 500, D: 1000 }, // Milestone vouchers
-      commCostPerUser: 10,
-      contributionMargin: 0.03, // 3.0% net contribution margin on card spend
-    },
-    upside: {
-      name: "Upside Case (Festive / High Engagement)",
-      desc: "Accelerated festive season conversion, omnichannel prompts, and active digital wallet defaults",
-      reactivationRates: { A: 0.25, B: 0.25, C: 0.30, D: 0.35 }, // 25% to 35%
-      promoCashbackPct: { A: 0.02, B: 0.02, C: 0.025, D: 0.03 }, // 2% - 3%
-      vouchers: { A: 150, B: 50, C: 750, D: 1500 },
-      commCostPerUser: 15,
-      contributionMargin: 0.032, // 3.2%
-    },
-    custom: {
-      name: "Custom Interactive Simulation",
-      desc: "Adjust live sliders below to simulate financial feasibility and ROI under custom business assumptions",
-      reactivationRates: {
-        A: customReactivationRate / 100,
-        B: customReactivationRate / 100,
-        C: customReactivationRate / 100,
-        D: customReactivationRate / 100,
-      },
-      promoCashbackPct: {
-        A: customPromotionalCashback / 100,
-        B: customPromotionalCashback / 100,
-        C: customPromotionalCashback / 100,
-        D: customPromotionalCashback / 100,
-      },
-      vouchers: {
-        A: customVoucherAmount * 0.3,
-        B: customVoucherAmount * 0.2,
-        C: customVoucherAmount,
-        D: customVoucherAmount * 2,
-      },
-      commCostPerUser: customCommCost,
-      contributionMargin: customContributionMargin / 100,
-    },
-  };
+  // Custom calculations
+  const customNetMarginPct = Math.max(0, customGrossMarginPct - customRewardAccrualPct);
+  const customIncrementalSpend = (fin.totalSpendFY26AD * customSowLiftPp) / 100;
+  const customGrossContribution = (customIncrementalSpend * customGrossMarginPct) / 100;
+  const customRewardExpense = (customIncrementalSpend * customRewardAccrualPct) / 100;
+  const customCampaignCosts =
+    customFixedCost +
+    fin.cohortSizeAD * customMsgCostPerCust +
+    fin.dOutreachCount * customDOutreachCost;
 
-  const currentConfig = scenarioConfigs[selectedScenario];
+  const customNetContribution =
+    customGrossContribution - (customRewardExpense + customCampaignCosts);
 
-  // Financial calculations per segment
-  const segmentFinancials = useMemo(() => {
-    return CUSTOMER_SEGMENTS.map((seg) => {
-      const segId = seg.id as "A" | "B" | "C" | "D";
-      const targetCount = seg.customerCount;
-      const baselineSpend = seg.totalFY26Spend;
-      const nonHsicSpend = seg.nonHsicFY26Spend;
-      const avgSpendPerCust = seg.avgFY26Spend;
+  const customRoiPct =
+    customCampaignCosts > 0 ? (customNetContribution / customCampaignCosts) * 100 : 0;
 
-      const rate = currentConfig.reactivationRates[segId];
-      const promoRate = currentConfig.promoCashbackPct[segId];
-      const voucher = currentConfig.vouchers[segId];
-      const commCost = targetCount * currentConfig.commCostPerUser;
+  const customBreakEvenSpend =
+    customNetMarginPct > 0 ? (customCampaignCosts / (customNetMarginPct / 100)) : 0;
+  const customBreakEvenPp =
+    fin.totalSpendFY26AD > 0 ? (customBreakEvenSpend / fin.totalSpendFY26AD) * 100 : 0;
+  const customBreakEvenPerCustomer =
+    fin.cohortSizeAD > 0 ? customBreakEvenSpend / fin.cohortSizeAD : 0;
 
-      // Reactivated customers
-      const reactivatedCustomers = Math.round(targetCount * rate);
-
-      // Incremental HSIC spending = portion of non-HSIC spend migrated back to HSIC by reactivated users
-      // Assuming reactivated customers migrate 60% of their non-HSIC spend back to the card
-      const migrationIntensity = segId === "D" ? 0.65 : 0.60;
-      const incrementalHSICSpend = reactivatedCustomers * (avgSpendPerCust * migrationIntensity);
-
-      // Revenue / Contribution generated
-      // Gross Contribution = Incremental Spend * Net Contribution Margin
-      const grossContribution = incrementalHSICSpend * currentConfig.contributionMargin;
-
-      // Costs
-      // 1. Existing Contractual Rewards cost on incremental spend (Prime avg ~2.2% weighted)
-      const existingRewardCost = incrementalHSICSpend * 0.022;
-
-      // 2. Additional promotional cashback cost
-      const promotionalCashbackCost = incrementalHSICSpend * promoRate;
-
-      // 3. Festive / milestone voucher cost
-      const totalVoucherCost = reactivatedCustomers * voucher;
-
-      // 4. Total campaign cost
-      const totalCampaignCost = promotionalCashbackCost + totalVoucherCost + commCost;
-
-      // Net Incremental Contribution (Profit)
-      const netIncrementalContribution = grossContribution - (promotionalCashbackCost + totalVoucherCost + commCost);
-
-      // Return on Investment (ROI)
-      const roiPct = totalCampaignCost > 0 ? (netIncrementalContribution / totalCampaignCost) * 100 : 0;
-
-      // Cost per Reactivated Customer (CAC)
-      const cac = reactivatedCustomers > 0 ? totalCampaignCost / reactivatedCustomers : 0;
-
-      // Break-even Reactivation Rate (%)
-      // Break-even is reached when grossContribution = totalCampaignCost
-      const marginPerReactivated = avgSpendPerCust * migrationIntensity * currentConfig.contributionMargin;
-      const variableCostPerReactivated = (avgSpendPerCust * migrationIntensity * promoRate) + voucher;
-      const unitContribution = marginPerReactivated - variableCostPerReactivated;
-      const breakEvenCustomers = unitContribution > 0 ? commCost / unitContribution : 0;
-      const breakEvenRatePct = (breakEvenCustomers / targetCount) * 100;
-
-      return {
-        ...seg,
-        reactivatedCustomers,
-        incrementalHSICSpend,
-        grossContribution,
-        existingRewardCost,
-        promotionalCashbackCost,
-        totalVoucherCost,
-        commCost,
-        totalCampaignCost,
-        netIncrementalContribution,
-        roiPct,
-        cac,
-        breakEvenRatePct,
-      };
-    });
-  }, [currentConfig]);
-
-  // Portfolio Totals
-  const portfolioSummary = useMemo(() => {
-    return segmentFinancials.reduce(
-      (acc, curr) => {
-        acc.targetCustomers += curr.customerCount;
-        acc.reactivatedCustomers += curr.reactivatedCustomers;
-        acc.incrementalSpend += curr.incrementalHSICSpend;
-        acc.grossContribution += curr.grossContribution;
-        acc.campaignCost += curr.totalCampaignCost;
-        acc.netContribution += curr.netIncrementalContribution;
-        return acc;
-      },
-      {
-        targetCustomers: 0,
-        reactivatedCustomers: 0,
-        incrementalSpend: 0,
-        grossContribution: 0,
-        campaignCost: 0,
-        netContribution: 0,
-      }
-    );
-  }, [segmentFinancials]);
-
-  const portfolioRoi =
-    portfolioSummary.campaignCost > 0
-      ? (portfolioSummary.netContribution / portfolioSummary.campaignCost) * 100
-      : 0;
-
-  const chartData = segmentFinancials.map((s) => ({
-    name: `Seg ${s.id}`,
-    grossContribution: Math.round(s.grossContribution),
-    campaignCost: Math.round(s.totalCampaignCost),
-    netProfit: Math.round(s.netIncrementalContribution),
+  // Chart data for scenarios
+  const chartData = fin.scenarioTableAD.map((sc: any) => ({
+    name: sc.scenario.split(" (")[0],
+    lift: sc.sowLiftPp,
+    grossContribution: Math.round(sc.grossContribution),
+    campaignCost: Math.round(sc.campaignCost),
+    netBenefit: Math.round(sc.netBenefit),
   }));
 
   return (
     <div className="space-y-6">
-      {/* Header & Scenario Toggles */}
+      {/* Header */}
       <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">Final Analytical Stage</span>
+            <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
+              Final Dashboard Section • Analytical Journey Concluded
+            </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 flex items-center space-x-2 mt-0.5">
             <DollarSign className="w-5 h-5 text-amber-500" />
-            <span>Financial Models &amp; Business Feasibility</span>
+            <span>Financial Models &amp; Economic Feasibility</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Quantifying incremental HSIC card spend, promotional costs, net contribution, and break-even feasibility
+            Evaluating incremental spend, baseline reward accruals, campaign expenses, break-even hurdles, and margin risks
           </p>
         </div>
 
-        {/* Scenario Switcher Tabs */}
-        <div className="flex items-center space-x-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200 text-xs">
-          <button
-            onClick={() => setSelectedScenario("base")}
-            className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-              selectedScenario === "base"
-                ? "bg-white text-slate-900 font-bold shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Base Case (15–20%)
-          </button>
-          <button
-            onClick={() => setSelectedScenario("upside")}
-            className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-              selectedScenario === "upside"
-                ? "bg-white text-slate-900 font-bold shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Upside Case (25–35%)
-          </button>
-          <button
-            onClick={() => setSelectedScenario("custom")}
-            className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-              selectedScenario === "custom"
-                ? "bg-amber-400 text-slate-950 font-bold shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Custom Sliders
-          </button>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+            Units: Source Units (No currency established)
+          </span>
         </div>
       </div>
 
-      {/* Custom Interactive Sliders (When Custom scenario is active) */}
-      {selectedScenario === "custom" && (
-        <div className="bg-amber-50/50 p-5 rounded-xl border border-amber-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Sliders className="w-4 h-4 text-amber-600" />
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                Interactive Campaign Parameter Controls
-              </h3>
-            </div>
-            <span className="text-[11px] text-amber-800 font-semibold">Simulating Real-Time Feasibility</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 text-xs">
-            {/* Slider 1 */}
-            <div className="bg-white p-3 rounded-lg border border-amber-200">
-              <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                <span>Reactivation Rate:</span>
-                <span className="font-bold text-slate-900">{customReactivationRate}%</span>
-              </div>
-              <input
-                type="range"
-                min="5"
-                max="50"
-                step="1"
-                value={customReactivationRate}
-                onChange={(e) => setCustomReactivationRate(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
-              />
-              <span className="text-[10px] text-slate-500 mt-1 block">5% to 50% adoption</span>
-            </div>
-
-            {/* Slider 2 */}
-            <div className="bg-white p-3 rounded-lg border border-amber-200">
-              <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                <span>Promotional Cashback:</span>
-                <span className="font-bold text-slate-900">{customPromotionalCashback.toFixed(1)}%</span>
-              </div>
-              <input
-                type="range"
-                min="0.5"
-                max="4.0"
-                step="0.5"
-                value={customPromotionalCashback}
-                onChange={(e) => setCustomPromotionalCashback(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
-              />
-              <span className="text-[10px] text-slate-500 mt-1 block">Additional bonus cashback</span>
-            </div>
-
-            {/* Slider 3 */}
-            <div className="bg-white p-3 rounded-lg border border-amber-200">
-              <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                <span>Voucher Value Base:</span>
-                <span className="font-bold text-slate-900">{formatINR(customVoucherAmount)}</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="2000"
-                step="100"
-                value={customVoucherAmount}
-                onChange={(e) => setCustomVoucherAmount(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
-              />
-              <span className="text-[10px] text-slate-500 mt-1 block">Milestone voucher tier</span>
-            </div>
-
-            {/* Slider 4 */}
-            <div className="bg-white p-3 rounded-lg border border-amber-200">
-              <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                <span>Contribution Margin:</span>
-                <span className="font-bold text-slate-900">{customContributionMargin.toFixed(1)}%</span>
-              </div>
-              <input
-                type="range"
-                min="1.5"
-                max="5.0"
-                step="0.1"
-                value={customContributionMargin}
-                onChange={(e) => setCustomContributionMargin(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
-              />
-              <span className="text-[10px] text-slate-500 mt-1 block">Net merchant + card margin</span>
-            </div>
-
-            {/* Slider 5 */}
-            <div className="bg-white p-3 rounded-lg border border-amber-200">
-              <div className="flex justify-between font-semibold text-slate-700 mb-1">
-                <span>Comm Cost / Card:</span>
-                <span className="font-bold text-slate-900">₹{customCommCost}</span>
-              </div>
-              <input
-                type="range"
-                min="5"
-                max="30"
-                step="1"
-                value={customCommCost}
-                onChange={(e) => setCustomCommCost(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
-              />
-              <span className="text-[10px] text-slate-500 mt-1 block">SMS, email &amp; in-app push</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Consolidated Portfolio Impact KPI Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-[#0B1B3D] to-slate-900 text-white rounded-2xl p-6 border border-slate-800 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
+      {/* CORE FINANCIAL ASSUMPTIONS BANNER */}
+      <div className="bg-gradient-to-r from-slate-900 via-[#0B1A36] to-slate-900 text-white rounded-2xl p-6 border border-slate-800 shadow-xl space-y-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Award className="w-5 h-5 text-amber-400" />
-            <h3 className="text-base font-extrabold text-white">
-              Portfolio Financial Impact Summary ({currentConfig.name})
+            <h3 className="text-base font-extrabold text-white uppercase tracking-wider">
+              Target Cohort Financial Parameters (A–D Decliners)
             </h3>
           </div>
-          <span className="text-xs text-slate-300 font-medium">10,498 Target Customers</span>
+          <span className="text-xs font-mono text-amber-300">
+            8,758 Cardholders • 120.06M FY26 Spend
+          </span>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10">
-            <div className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">Reactivated Cards</div>
-            <div className="text-xl font-black text-amber-400 mt-1">
-              {formatNumber(portfolioSummary.reactivatedCustomers)}
-            </div>
-            <div className="text-[10px] text-slate-300 mt-0.5">
-              {((portfolioSummary.reactivatedCustomers / 10498) * 100).toFixed(1)}% of cohort
-            </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+          <div className="bg-white/10 p-3 rounded-xl border border-white/10">
+            <span className="text-[10px] text-slate-300 uppercase tracking-wider block">Target A–D Decliners</span>
+            <span className="text-xl font-black text-white mt-1 block">
+              {formatNumber(fin.cohortSizeAD)}
+            </span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">≥10 pp SoW drop</span>
           </div>
 
-          <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10">
-            <div className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">Incremental HSIC Spend</div>
-            <div className="text-xl font-black text-white mt-1">
-              {formatINR(portfolioSummary.incrementalSpend)}
-            </div>
-            <div className="text-[10px] text-emerald-400 mt-0.5">Recovered volume</div>
+          <div className="bg-white/10 p-3 rounded-xl border border-white/10">
+            <span className="text-[10px] text-slate-300 uppercase tracking-wider block">A–D FY26 Net Spend</span>
+            <span className="text-xl font-black text-white mt-1 block">
+              120.06M
+            </span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">13,708 mean/customer</span>
           </div>
 
-          <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10">
-            <div className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">Gross Contribution</div>
-            <div className="text-xl font-black text-white mt-1">
-              {formatINR(portfolioSummary.grossContribution)}
-            </div>
-            <div className="text-[10px] text-slate-300 mt-0.5">
-              @ {(currentConfig.contributionMargin * 100).toFixed(1)}% margin
-            </div>
+          <div className="bg-white/10 p-3 rounded-xl border border-white/10">
+            <span className="text-[10px] text-slate-300 uppercase tracking-wider block">Gross Contribution</span>
+            <span className="text-xl font-black text-amber-400 mt-1 block">
+              3.00%
+            </span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Interchange + merchant margin</span>
           </div>
 
-          <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10">
-            <div className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">Total Campaign Cost</div>
-            <div className="text-xl font-black text-rose-300 mt-1">
-              {formatINR(portfolioSummary.campaignCost)}
-            </div>
-            <div className="text-[10px] text-slate-300 mt-0.5">Promo + vouchers + comms</div>
+          <div className="bg-white/10 p-3 rounded-xl border border-white/10">
+            <span className="text-[10px] text-slate-300 uppercase tracking-wider block">Est. Reward Accrual</span>
+            <span className="text-xl font-black text-rose-300 mt-1 block">
+              1.393%
+            </span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">Baseline accrual on current HSIC</span>
           </div>
 
           <div className="bg-emerald-950/60 p-3 rounded-xl border border-emerald-500/40">
-            <div className="text-[10px] text-emerald-300 font-medium uppercase tracking-wider">Net Contribution</div>
-            <div className="text-xl font-black text-emerald-400 mt-1">
-              {formatINR(portfolioSummary.netContribution)}
-            </div>
-            <div className="text-[10px] text-emerald-300 mt-0.5">Net Incremental Profit</div>
+            <span className="text-[10px] text-emerald-300 uppercase tracking-wider block">Blended Net Margin</span>
+            <span className="text-xl font-black text-emerald-400 mt-1 block">
+              1.607%
+            </span>
+            <span className="text-[10px] text-emerald-300 mt-0.5 block">3.0% gross − 1.393% reward</span>
           </div>
 
-          <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10">
-            <div className="text-[10px] text-slate-300 font-medium uppercase tracking-wider">Blended ROI</div>
-            <div className="text-xl font-black text-amber-400 mt-1">
-              {portfolioRoi.toFixed(0)}%
-            </div>
-            <div className="text-[10px] text-slate-300 mt-0.5">Return on investment</div>
+          <div className="bg-white/10 p-3 rounded-xl border border-white/10">
+            <span className="text-[10px] text-slate-300 uppercase tracking-wider block">Full-Scale Cost</span>
+            <span className="text-xl font-black text-white mt-1 block">
+              127,104
+            </span>
+            <span className="text-[10px] text-slate-400 mt-0.5 block">75k fixed + 26k msg + 26k outreach</span>
           </div>
         </div>
       </div>
 
-      {/* Segment Financial Ledger Table */}
+      {/* PROVISIONAL SCENARIO TABLE (+3 pp, +5 pp, +6.6 pp, +8 pp) */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex items-center justify-between">
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Segment-Level Financial Feasibility Ledger</h3>
+            <h3 className="font-bold text-slate-900 text-sm">
+              Provisional Scenario Table (A–D Decliners at 1.607% Blended Net Margin)
+            </h3>
             <p className="text-xs text-slate-500">
-              Clear distinction between observed baseline data, campaign parameters, and calculated scenario results
+              Clear distinction between observed baseline data, incremental spend, campaign costs, and net economic contribution
             </p>
           </div>
-          <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded">
-            All 4 Segments (A, B, C, D)
+          <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded">
+            Portfolio Break-Even: +6.6 pp (~903 units/customer)
           </span>
         </div>
 
@@ -440,134 +183,314 @@ export default function FinancialModels() {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-900 text-white uppercase text-[10px] tracking-wider">
               <tr>
-                <th className="px-4 py-3">Segment</th>
-                <th className="px-3 py-3 text-right">Target Pop</th>
-                <th className="px-3 py-3 text-right">Reactivated</th>
+                <th className="px-4 py-3">Uplift Scenario</th>
+                <th className="px-3 py-3 text-right">SoW Lift</th>
                 <th className="px-3 py-3 text-right">Incr. HSIC Spend</th>
-                <th className="px-3 py-3 text-right">Gross Margin</th>
-                <th className="px-3 py-3 text-right">Promo Cost</th>
-                <th className="px-3 py-3 text-right">Voucher Cost</th>
-                <th className="px-3 py-3 text-right">Total Cost</th>
-                <th className="px-3 py-3 text-right">Net Profit</th>
-                <th className="px-3 py-3 text-right">CAC</th>
-                <th className="px-3 py-3 text-right">Break-Even</th>
+                <th className="px-3 py-3 text-right">Gross Margin (1.607%)</th>
+                <th className="px-3 py-3 text-right">Full Campaign Cost</th>
+                <th className="px-3 py-3 text-right">Net Economic Benefit</th>
+                <th className="px-3 py-3 text-right">ROI (%)</th>
+                <th className="px-4 py-3">Feasibility Assessment</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {segmentFinancials.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="px-4 py-3 font-bold text-slate-900">
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2 h-2 rounded-full bg-amber-500" />
-                      <span>{row.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-3 text-right text-slate-600 font-medium">
-                    {formatNumber(row.customerCount)}
-                  </td>
-                  <td className="px-3 py-3 text-right font-bold text-slate-900">
-                    {formatNumber(row.reactivatedCustomers)}
-                  </td>
-                  <td className="px-3 py-3 text-right font-medium text-slate-900">
-                    {formatINR(row.incrementalHSICSpend)}
-                  </td>
-                  <td className="px-3 py-3 text-right text-slate-700 font-medium">
-                    {formatINR(row.grossContribution)}
-                  </td>
-                  <td className="px-3 py-3 text-right text-slate-600">
-                    {formatINR(row.promotionalCashbackCost)}
-                  </td>
-                  <td className="px-3 py-3 text-right text-slate-600">
-                    {row.totalVoucherCost > 0 ? formatINR(row.totalVoucherCost) : "—"}
-                  </td>
-                  <td className="px-3 py-3 text-right font-medium text-rose-600">
-                    {formatINR(row.totalCampaignCost)}
-                  </td>
-                  <td className="px-3 py-3 text-right font-extrabold text-emerald-600">
-                    {formatINR(row.netIncrementalContribution)}
-                  </td>
-                  <td className="px-3 py-3 text-right text-slate-700 font-medium">
-                    {formatINR(row.cac)}
-                  </td>
-                  <td className="px-3 py-3 text-right font-bold text-slate-800">
-                    {row.breakEvenRatePct > 0 ? `${row.breakEvenRatePct.toFixed(1)}%` : "Immediate"}
-                  </td>
-                </tr>
-              ))}
-              {/* Portfolio Totals Row */}
-              <tr className="bg-slate-50 font-bold border-t-2 border-slate-300 text-slate-900">
-                <td className="px-4 py-3 text-slate-900 font-black">Consolidated Total</td>
-                <td className="px-3 py-3 text-right">{formatNumber(portfolioSummary.targetCustomers)}</td>
-                <td className="px-3 py-3 text-right text-amber-600 font-black">{formatNumber(portfolioSummary.reactivatedCustomers)}</td>
-                <td className="px-3 py-3 text-right font-black">{formatINR(portfolioSummary.incrementalSpend)}</td>
-                <td className="px-3 py-3 text-right">{formatINR(portfolioSummary.grossContribution)}</td>
-                <td className="px-3 py-3 text-right" colSpan={2}>
-                  Combined Variable Costs
-                </td>
-                <td className="px-3 py-3 text-right text-rose-600 font-black">{formatINR(portfolioSummary.campaignCost)}</td>
-                <td className="px-3 py-3 text-right text-emerald-700 font-black text-sm">{formatINR(portfolioSummary.netContribution)}</td>
-                <td className="px-3 py-3 text-right">₹{Math.round(portfolioSummary.campaignCost / portfolioSummary.reactivatedCustomers)}</td>
-                <td className="px-3 py-3 text-right text-emerald-700 font-black">Passed</td>
-              </tr>
+              {fin.scenarioTableAD.map((row: any, idx: number) => {
+                const isPositive = row.netBenefit >= 0;
+                return (
+                  <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-4 py-3 font-bold text-slate-900">
+                      {row.scenario}
+                    </td>
+                    <td className="px-3 py-3 text-right font-semibold text-slate-800">
+                      +{row.sowLiftPp.toFixed(1)} pp
+                    </td>
+                    <td className="px-3 py-3 text-right font-medium text-slate-900">
+                      {formatUnits(row.incrementalSpend)}
+                    </td>
+                    <td className="px-3 py-3 text-right text-slate-700 font-medium">
+                      {formatNumber(row.grossContribution)} units
+                    </td>
+                    <td className="px-3 py-3 text-right text-rose-600 font-medium">
+                      {formatNumber(row.campaignCost)} units
+                    </td>
+                    <td
+                      className={`px-3 py-3 text-right font-extrabold ${
+                        isPositive ? "text-emerald-600" : "text-rose-600"
+                      }`}
+                    >
+                      {row.netBenefit > 0 ? `+${formatNumber(row.netBenefit)}` : formatNumber(row.netBenefit)} units
+                    </td>
+                    <td
+                      className={`px-3 py-3 text-right font-bold ${
+                        isPositive ? "text-emerald-700" : "text-rose-600"
+                      }`}
+                    >
+                      {row.roiPct.toFixed(1)}%
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${
+                          isPositive
+                            ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                            : "bg-amber-50 text-amber-900 border border-amber-200"
+                        }`}
+                      >
+                        {row.verdict}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Visual Profit & Cost Breakdown Chart */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-        <h3 className="font-bold text-slate-900 text-sm mb-1">
-          Financial Comparison: Gross Margin vs. Campaign Cost vs. Net Profit (₹)
-        </h3>
-        <p className="text-xs text-slate-500 mb-4">Segment D generates the largest net contribution, followed by Segment A</p>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-              <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: "bold" }} />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${(v / 100000).toFixed(0)}L`} />
-              <Tooltip
-                formatter={(val: any, name: any) => [formatINR(Number(val)), name]}
-                contentStyle={{ backgroundColor: "#0F172A", color: "#FFF", borderRadius: 8, fontSize: 11 }}
-              />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="grossContribution" fill="#0B1B3D" name="Gross Contribution" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="campaignCost" fill="#EF4444" name="Campaign Costs" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="netProfit" fill="#10B981" name="Net Incremental Profit" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+      {/* SEGMENT-SPECIFIC BREAK-EVEN ANALYSIS */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-xs">
+          <div className="font-bold text-slate-900">Segment A (Wallet)</div>
+          <div className="text-xl font-black text-amber-600 mt-1">+6.6 pp</div>
+          <p className="text-[11px] text-slate-500 mt-1">Break-even uplift hurdle based on 2,654 customers</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-xs">
+          <div className="font-bold text-slate-900">Segment B (Cash/UPI)</div>
+          <div className="text-xl font-black text-cyan-600 mt-1">+6.9 pp</div>
+          <p className="text-[11px] text-slate-500 mt-1">Break-even hurdle across 2,097 customers</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-xs">
+          <div className="font-bold text-slate-900">Segment C (Cards)</div>
+          <div className="text-xl font-black text-blue-600 mt-1">+7.6 pp</div>
+          <p className="text-[11px] text-slate-500 mt-1">Break-even hurdle across 2,285 customers</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-xs">
+          <div className="font-bold text-slate-900">Segment D (High-Value)</div>
+          <div className="text-xl font-black text-amber-600 mt-1">+6.0 pp</div>
+          <p className="text-[11px] text-slate-500 mt-1">Includes 30 units/contact outreach for 861 customers</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-xs">
+          <div className="font-bold text-slate-900">Segment E (Low SoW)</div>
+          <div className="text-xl font-black text-emerald-600 mt-1">+1.7 pp</div>
+          <p className="text-[11px] text-slate-500 mt-1">Messaging-only test: 14,490 cost / 52.72M spend</p>
         </div>
       </div>
 
-      {/* Executive Strategic Takeaways & Final Business Implications */}
+      {/* PRIME CATEGORY MARGIN WARNING (CRITICAL FINTECH CAVEAT) */}
+      <div className="bg-white rounded-2xl p-6 border-2 border-rose-300 shadow-sm space-y-4">
+        <div className="flex items-center space-x-2.5 text-rose-700">
+          <ShieldAlert className="w-5 h-5 text-rose-600" />
+          <h3 className="text-base font-extrabold text-slate-900">
+            Critical Margin Warning: Prime Category Reward Economics
+          </h3>
+        </div>
+        <p className="text-xs text-slate-600 leading-relaxed">
+          The blended 1.607% net contribution margin assumes a constant expenditure distribution. However, if the 3.0% gross contribution assumption applies uniformly across all categories, contractual reward rates create divergent category economics:
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          {fin.primeCategoryMarginWarning.map((item: any, idx: number) => {
+            const isNegative = item.netMarginAfterReward.startsWith("-");
+            const isZero = item.netMarginAfterReward === "0.0%";
+            return (
+              <div
+                key={idx}
+                className={`p-3.5 rounded-xl border ${
+                  isNegative
+                    ? "bg-rose-50/70 border-rose-300 text-rose-950"
+                    : isZero
+                    ? "bg-amber-50/70 border-amber-300 text-amber-950"
+                    : "bg-emerald-50/70 border-emerald-300 text-emerald-950"
+                }`}
+              >
+                <div className="font-bold text-xs">{item.category}</div>
+                <div className="text-[11px] text-slate-600 mt-1">
+                  Contractual Reward: <strong>{item.contractualReward}</strong>
+                </div>
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-200/60">
+                  <span className="text-[11px]">Net Margin:</span>
+                  <span className={`font-black text-sm ${isNegative ? "text-rose-700" : isZero ? "text-amber-800" : "text-emerald-700"}`}>
+                    {item.netMarginAfterReward}
+                  </span>
+                </div>
+                <div className="text-[10px] text-slate-500 mt-1 italic">{item.status}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700 flex items-start space-x-2">
+          <Info className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
+          <p className="leading-relaxed">
+            <strong>Action Required Before Launch:</strong> Because Prime Grocery yields a -2.0% net margin at a flat 3% contribution rate, offering extra Layer 2 promotional rewards on Grocery would deepen portfolio losses. Finance must confirm category-level interchange and merchant co-funding before extending promotional incentives on Prime Grocery.
+          </p>
+        </div>
+      </div>
+
+      {/* INTERACTIVE SCENARIO CALCULATOR */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-5">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center space-x-2">
+            <Sliders className="w-5 h-5 text-amber-500" />
+            <h3 className="font-bold text-slate-900 text-base">
+              Interactive Scenario Calculator (Live Simulation)
+            </h3>
+          </div>
+          <span className="text-xs text-slate-500 font-medium">Adjust assumptions below</span>
+        </div>
+
+        {/* Sliders Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div className="flex justify-between font-semibold text-slate-700 mb-1">
+              <span>SoW Uplift (pp):</span>
+              <span className="font-bold text-slate-900">+{customSowLiftPp.toFixed(1)} pp</span>
+            </div>
+            <input
+              type="range"
+              min="1.0"
+              max="15.0"
+              step="0.1"
+              value={customSowLiftPp}
+              onChange={(e) => setCustomSowLiftPp(Number(e.target.value))}
+              className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+            />
+          </div>
+
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div className="flex justify-between font-semibold text-slate-700 mb-1">
+              <span>Gross Margin (%):</span>
+              <span className="font-bold text-slate-900">{customGrossMarginPct.toFixed(1)}%</span>
+            </div>
+            <input
+              type="range"
+              min="1.5"
+              max="5.0"
+              step="0.1"
+              value={customGrossMarginPct}
+              onChange={(e) => setCustomGrossMarginPct(Number(e.target.value))}
+              className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+            />
+          </div>
+
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div className="flex justify-between font-semibold text-slate-700 mb-1">
+              <span>Reward Accrual (%):</span>
+              <span className="font-bold text-slate-900">{customRewardAccrualPct.toFixed(2)}%</span>
+            </div>
+            <input
+              type="range"
+              min="1.0"
+              max="2.5"
+              step="0.05"
+              value={customRewardAccrualPct}
+              onChange={(e) => setCustomRewardAccrualPct(Number(e.target.value))}
+              className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+            />
+          </div>
+
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div className="flex justify-between font-semibold text-slate-700 mb-1">
+              <span>Fixed Costs:</span>
+              <span className="font-bold text-slate-900">{formatNumber(customFixedCost)}</span>
+            </div>
+            <input
+              type="range"
+              min="25000"
+              max="150000"
+              step="5000"
+              value={customFixedCost}
+              onChange={(e) => setCustomFixedCost(Number(e.target.value))}
+              className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+            />
+          </div>
+
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div className="flex justify-between font-semibold text-slate-700 mb-1">
+              <span>Msg Cost / Cust:</span>
+              <span className="font-bold text-slate-900">{customMsgCostPerCust} units</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              step="1"
+              value={customMsgCostPerCust}
+              onChange={(e) => setCustomMsgCostPerCust(Number(e.target.value))}
+              className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+            />
+          </div>
+
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <div className="flex justify-between font-semibold text-slate-700 mb-1">
+              <span>D Outreach Cost:</span>
+              <span className="font-bold text-slate-900">{customDOutreachCost} units</span>
+            </div>
+            <input
+              type="range"
+              min="10"
+              max="60"
+              step="5"
+              value={customDOutreachCost}
+              onChange={(e) => setCustomDOutreachCost(Number(e.target.value))}
+              className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+            />
+          </div>
+        </div>
+
+        {/* Live Calculation Output Strip */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+          <div className="p-3 bg-slate-100 rounded-xl">
+            <span className="text-[10px] text-slate-500 block uppercase">Simulated Incr. Spend</span>
+            <span className="text-lg font-black text-slate-900">{formatUnits(customIncrementalSpend)}</span>
+          </div>
+          <div className="p-3 bg-slate-100 rounded-xl">
+            <span className="text-[10px] text-slate-500 block uppercase">Total Campaign Cost</span>
+            <span className="text-lg font-black text-rose-600">{formatNumber(Math.round(customCampaignCosts))} units</span>
+          </div>
+          <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+            <span className="text-[10px] text-emerald-800 block uppercase font-bold">Simulated Net Benefit</span>
+            <span className={`text-lg font-black ${customNetContribution >= 0 ? "text-emerald-700" : "text-rose-600"}`}>
+              {customNetContribution >= 0 ? `+${formatNumber(Math.round(customNetContribution))}` : formatNumber(Math.round(customNetContribution))} units
+            </span>
+          </div>
+          <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
+            <span className="text-[10px] text-amber-800 block uppercase font-bold">Simulated Break-Even</span>
+            <span className="text-lg font-black text-amber-800">
+              +{customBreakEvenPp.toFixed(1)} pp ({formatUnits(customBreakEvenPerCustomer)}/cust)
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* FINAL EXECUTIVE BUSINESS IMPLICATIONS */}
       <div className="bg-gradient-to-br from-slate-900 to-[#0B1528] text-white rounded-2xl p-6 border border-slate-800 shadow-xl space-y-4">
         <div className="flex items-center space-x-2 text-amber-400">
           <CheckCircle2 className="w-5 h-5" />
           <h3 className="text-base font-bold text-white uppercase tracking-wider">
-            Executive Summary &amp; Business Recommendations
+            Executive Implications &amp; Decision Pathway
           </h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs leading-relaxed text-slate-300">
           <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-            <strong className="text-white block font-bold text-sm mb-1.5">1. Prioritize High-Value Retention (Seg D)</strong>
-            Segment D generates over 50% of total portfolio net profit under both Base and Upside models. Reversing silent attrition among these top 25% spenders with milestone festive vouchers yields the highest return on marketing capital.
+            <strong className="text-white block font-bold text-sm mb-1.5">1. Explaining the Decline Without Guesswork</strong>
+            The data demonstrates that cardholders shifted spending heavily into MetroMart Wallet (+13.0 pp in decliners) and Cash/UPI (+10.9 pp). Rather than assuming we know why, we treat behavioural explanations as hypotheses and use Layer 1 visibility to test whether reminder nudges alone can win back volume.
           </div>
 
           <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-            <strong className="text-white block font-bold text-sm mb-1.5">2. Break Friction with Wallet (Seg A) &amp; UPI (Seg B)</strong>
-            Together, Segments A and B represent 72.9% of all declining cardholders. Because they love shopping at MetroMart, micro-incentives (e.g., 3-swipe challenge, POS contactless tap discount, and RuPay UPI linkage) convert convenient habits back into card volume.
+            <strong className="text-white block font-bold text-sm mb-1.5">2. Disciplined Two-Layer Design</strong>
+            Layer 1 carries zero promotional reward expense. Layer 2 is strictly capped at 25 units/customer (25,000 units total) and withheld from organic responders, protecting marketing capital and preventing wasteful subsidies.
           </div>
 
           <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-            <strong className="text-white block font-bold text-sm mb-1.5">3. Sustainable Financial Feasibility</strong>
-            With an average break-even reactivation hurdle of under 5% and campaign CAC between ₹150 and ₹450 per customer, the proposed targeted strategy is economically sound, highly profitable, and ready for immediate pilot execution.
+            <strong className="text-white block font-bold text-sm mb-1.5">3. Controlled Scaling Criteria</strong>
+            Because prior decliners are subject to regression to the mean, we do not scale based on simple before-and-after metrics. The pilot scales only if ITT uplift against the randomized control group exceeds the 6.6 pp break-even threshold with positive net contribution.
           </div>
         </div>
 
         <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400">
           <span>MetroMart Inc. × HSIC Bank Co-Branded Card Analytics Platform</span>
-          <span className="text-amber-400 font-semibold mt-1 sm:mt-0">Analytical Journey Concluded</span>
+          <span className="text-amber-400 font-semibold mt-1 sm:mt-0">End of Analytical Journey</span>
         </div>
       </div>
     </div>

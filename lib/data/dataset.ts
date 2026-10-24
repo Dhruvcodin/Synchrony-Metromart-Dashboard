@@ -49,6 +49,31 @@ export interface CustomerSegment {
   successMetric: string;
 }
 
+export interface SixSegment {
+  id: string;
+  name: string;
+  code: string;
+  strategyName: string;
+  category: string;
+  customerCount: number;
+  shareOfCohort: number;
+  meanSpendFY26: number;
+  totalSpendFY26: number;
+  sowFY25: number;
+  sowFY26: number;
+  declinePp: number;
+  breakEvenPp: number;
+  behavior: string;
+  hypothesis: string;
+  layer1Intervention: string;
+  layer2Intervention: string;
+  intervention?: string;
+  successMetric: string;
+  guardrail: string;
+  failAction: string;
+  owner: string;
+}
+
 export const EXECUTIVE_OVERVIEW_DATA = analyticsData.EXECUTIVE_OVERVIEW_DATA;
 export const CATEGORY_LOOKUP = analyticsData.CATEGORY_LOOKUP;
 export const PAYMENT_LOOKUP = analyticsData.PAYMENT_LOOKUP;
@@ -62,3 +87,9 @@ export const OVERLAPPING_SEGMENT_COUNTS = analyticsData.OVERLAPPING_SEGMENT_COUN
 export const EDA_CUSTOMER_DEMOGRAPHICS = analyticsData.EDA_CUSTOMER_DEMOGRAPHICS;
 export const EDA_TRANSACTIONS = analyticsData.EDA_TRANSACTIONS;
 export const DATA_EXPLORER_SAMPLES = analyticsData.DATA_EXPLORER_SAMPLES;
+
+// "Reward at the Register" Revised Strategy & 6-Segment Cohort (20,779 Customers)
+export const FIXED_COHORT_SUMMARY = (analyticsData as any).FIXED_COHORT_SUMMARY;
+export const SIX_CUSTOMER_SEGMENTS = (analyticsData as any).SIX_CUSTOMER_SEGMENTS as SixSegment[];
+export const PILOT_DESIGN = (analyticsData as any).PILOT_DESIGN;
+export const FINANCIAL_MODELS_V2 = (analyticsData as any).FINANCIAL_MODELS_V2;

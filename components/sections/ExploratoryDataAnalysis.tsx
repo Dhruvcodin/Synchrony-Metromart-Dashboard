@@ -102,8 +102,8 @@ export default function ExploratoryDataAnalysis() {
 
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
               <div className="text-xs text-slate-500 font-medium">Mean Credit Limit</div>
-              <div className="text-2xl font-extrabold text-slate-900 mt-1">₹1,99,995</div>
-              <div className="text-xs text-slate-500 mt-1">Min ₹100k • Max ₹300k</div>
+              <div className="text-2xl font-extrabold text-slate-900 mt-1">199,995 units</div>
+              <div className="text-xs text-slate-500 mt-1">Min 100k • Max 300k units</div>
             </div>
 
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -270,19 +270,19 @@ export default function ExploratoryDataAnalysis() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
               <div className="text-xs text-slate-500 font-medium">Total Gross Sales</div>
-              <div className="text-xl font-extrabold text-emerald-600 mt-1">₹1,23,32,57,856</div>
+              <div className="text-xl font-extrabold text-emerald-600 mt-1">1,233.26M units</div>
               <div className="text-xs text-slate-500 mt-1">399,304 sales records (89.91%)</div>
             </div>
 
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
               <div className="text-xs text-slate-500 font-medium">Total Returns (Subtracted)</div>
-              <div className="text-xl font-extrabold text-rose-600 mt-1">-₹13,93,16,934</div>
+              <div className="text-xl font-extrabold text-rose-600 mt-1">-139.32M units</div>
               <div className="text-xs text-slate-500 mt-1">44,814 return records (10.09% of records)</div>
             </div>
 
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
               <div className="text-xs text-slate-500 font-medium">Net Sales Spend Denominator</div>
-              <div className="text-xl font-extrabold text-slate-900 mt-1">₹1,09,39,40,922</div>
+              <div className="text-xl font-extrabold text-slate-900 mt-1">1,093.94M units</div>
               <div className="text-xs text-slate-500 mt-1">Net Sales = Gross Sales - Returns</div>
             </div>
           </div>
@@ -302,32 +302,32 @@ export default function ExploratoryDataAnalysis() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={txData.categories} layout="vertical" margin={{ left: 40, right: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
-                  <XAxis type="number" tickFormatter={(v) => `₹${(v / 10000000).toFixed(0)}Cr`} tick={{ fontSize: 11 }} />
+                  <XAxis type="number" tickFormatter={(v) => `${(v / 1000000).toFixed(0)}M`} tick={{ fontSize: 11 }} />
                   <YAxis dataKey="category" type="category" tick={{ fontSize: 11 }} width={120} />
                   <Tooltip
                     formatter={(val: any) => [formatINR(Number(val)), "Net Spend"]}
                     contentStyle={{ backgroundColor: "#0F172A", color: "#FFF", borderRadius: 8, fontSize: 12 }}
                   />
-                  <Bar dataKey="netSpend" fill="#0B1B3D" radius={[0, 4, 4, 0]} name="Net Spend (₹)" />
+                  <Bar dataKey="netSpend" fill="#0B1B3D" radius={[0, 4, 4, 0]} name="Net Spend (units)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-2 border-t border-slate-100">
               <div className="bg-amber-50 p-2 rounded border border-amber-200">
                 <span className="font-bold text-amber-900">Electronics (#1 Category):</span>
-                <div className="text-slate-700 font-semibold mt-0.5">₹24.53 Crore (22.4% net share)</div>
+                <div className="text-slate-700 font-semibold mt-0.5">245.3M units (22.4% net share)</div>
               </div>
               <div className="bg-slate-50 p-2 rounded border border-slate-200">
                 <span className="font-bold text-slate-800">Large Appliances:</span>
-                <div className="text-slate-700 font-semibold mt-0.5">₹19.06 Crore (17.4%)</div>
+                <div className="text-slate-700 font-semibold mt-0.5">190.6M units (17.4%)</div>
               </div>
               <div className="bg-slate-50 p-2 rounded border border-slate-200">
                 <span className="font-bold text-slate-800">Furniture:</span>
-                <div className="text-slate-700 font-semibold mt-0.5">₹16.92 Crore (15.5%)</div>
+                <div className="text-slate-700 font-semibold mt-0.5">169.2M units (15.5%)</div>
               </div>
               <div className="bg-amber-50 p-2 rounded border border-amber-200">
                 <span className="font-bold text-amber-900">Grocery (5% Prime Tier):</span>
-                <div className="text-slate-700 font-semibold mt-0.5">₹3.26 Crore (Frequent visits)</div>
+                <div className="text-slate-700 font-semibold mt-0.5">32.6M units (Frequent visits)</div>
               </div>
             </div>
           </div>
@@ -348,7 +348,7 @@ export default function ExploratoryDataAnalysis() {
               ))}
             </div>
             <p className="text-xs text-slate-600 mt-3 pt-2 border-t border-slate-100 leading-relaxed">
-              <strong>Critical Insight:</strong> MetroMart Wallet commands the largest share of net spend at MetroMart (₹43.56 Crore / 39.8%), followed by Cash/UPI at ₹26.02 Crore. HSIC Bank Credit Card captures only ₹15.46 Crore (14.1% of portfolio net spend across all shoppers), trailing behind debit and competing cards combined.
+              <strong>Critical Insight:</strong> MetroMart Wallet commands the largest share of net spend at MetroMart (435.6M units / 39.8%), followed by Cash/UPI at 260.2M units (23.8%). HSIC Bank Credit Card captures only 154.6M units (14.1% of portfolio net spend across all shoppers), trailing behind debit and competing cards combined.
             </p>
           </div>
         </div>

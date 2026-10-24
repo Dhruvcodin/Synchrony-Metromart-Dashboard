@@ -11,301 +11,444 @@ import {
   Gift,
   ArrowRight,
   Sparkles,
-  CheckCircle,
+  CheckCircle2,
   Clock,
   Layers,
   Settings,
+  AlertTriangle,
+  Info,
+  ShieldCheck,
+  Split,
+  Eye,
+  Sliders,
 } from "lucide-react";
-import { CUSTOMER_SEGMENTS } from "@/lib/data/dataset";
-import { formatNumber, formatINR } from "@/lib/utils";
+import {
+  SIX_CUSTOMER_SEGMENTS,
+  PILOT_DESIGN,
+  FIXED_COHORT_SUMMARY,
+} from "@/lib/data/dataset";
+import { formatNumber, formatUnits } from "@/lib/utils";
+
+const SEGMENT_COLORS: Record<string, string> = {
+  A: "#8B5CF6", // Violet
+  B: "#06B6D4", // Cyan
+  C: "#3B82F6", // Blue
+  D: "#F59E0B", // Gold
+  E: "#94A3B8", // Slate
+  Improvers: "#10B981", // Emerald
+};
 
 interface TargetedStrategiesProps {
   onNavigate: (sectionId: string) => void;
 }
 
 export default function TargetedStrategies({ onNavigate }: TargetedStrategiesProps) {
-  const [activeStrategy, setActiveStrategy] = useState<string>("all");
+  const [selectedSegmentId, setSelectedSegmentId] = useState<string>("A");
+  const [meterPrimeStatus, setMeterPrimeStatus] = useState<"prime" | "non-prime">("prime");
 
-  const strategies = [
-    {
-      id: "A",
-      title: "Wallet-to-HSIC Switch Challenge",
-      subtitle: "Re-anchor HSIC Card as Primary MetroMart Payment",
-      segmentName: "Segment A — MetroMart Wallet Switchers",
-      customerCount: 4931,
-      targetSpendPool: 58741497,
-      nonHsicLeakage: 53887964,
-      duration: "60 Days (Two Billing Cycles)",
-      eligibility: "Active cardholders in Segment A whose MetroMart Wallet share increased",
-      behavior: "Customers migrated 13.03 pp of wallet share into MetroMart Wallet. They view the wallet as frictionless for everyday items, while letting their HSIC card sit idle.",
-      problem: "The stored-value MetroMart Wallet produces zero interchange revenue for HSIC and severs top-of-wallet card habituation.",
-      intervention: [
-        "Phase 1 (The 3-Swipe Challenge): Spend with HSIC card directly on 3 consecutive MetroMart orders > ₹1,000 to unlock a ₹150 statement credit adjustment.",
-        "Phase 2 (Auto-Reload Co-Brand Link): Earn an ongoing 1.5% reload bonus when using HSIC card to fund the MetroMart Wallet balance for orders under ₹500.",
-        "Phase 3 (In-App Default Placement): In-app UI prompt setting HSIC as the 1-Click checkout payment default on MetroMart web and mobile app.",
-      ],
-      kpis: [
-        "Reactivate 20%+ target cardholders (986+ customers)",
-        "Lift HSIC Share of Wallet by +12 percentage points",
-        "Generate ₹11.7M+ in incremental HSIC card transaction volume",
-      ],
-      rationale: "Largest segment by population (47.0% of decliners). Because these shoppers already trust MetroMart, modest checkout nudges can rapidly shift high transaction frequency back to the co-brand card.",
-      accent: "from-violet-600 to-indigo-700",
-      borderAccent: "border-violet-500",
-      badgeColor: "bg-violet-100 text-violet-800",
-    },
-    {
-      id: "B",
-      title: "Tap, Pay & Earn: Contactless Drive",
-      subtitle: "Compete with Instant UPI & Cash Checkout at Store POS",
-      segmentName: "Segment B — Cash/UPI Switchers",
-      customerCount: 2721,
-      targetSpendPool: 30359142,
-      nonHsicLeakage: 27439368,
-      duration: "45 Days (Fast-Action Campaign)",
-      eligibility: "Active cardholders in Segment B with increased Cash/UPI transaction share",
-      behavior: "Cardholders shifted +10.93 pp into Cash/UPI. High preference for QR code scanning at store registers and digital UPI apps.",
-      problem: "Perceived friction of physical card swiping vs instant mobile UPI apps leads to silent abandonment of HSIC card at checkout counters.",
-      intervention: [
-        "Incentive 1 (Instant POS Bill Waiver): Flat ₹50 instant discount applied at POS checkout when tapping contactless HSIC card on orders over ₹500 (up to 3 times per month).",
-        "Incentive 2 (RuPay UPI Integration): Enable cardholders to link their HSIC RuPay credit line directly inside Google Pay / PhonePe for 2x reward points on QR scans.",
-        "Incentive 3 (Store Associate Cashier Nudge): Point-of-sale terminal prompt reminding cashier to ask: 'Would you like to tap your HSIC card for 5% cashback today?'",
-      ],
-      kpis: [
-        "Convert 18%+ of Cash/UPI transactions to HSIC contactless tap (490+ accounts)",
-        "Increase monthly HSIC active card utilization from 1.2 to 3.8 transactions/month",
-        "Generate ₹5.4M+ in incremental HSIC transaction volume",
-      ],
-      rationale: "UPI habituation is convenience-driven rather than reward-driven. Introducing contactless tap speed coupled with instant bill waivers breaks the UPI muscle memory.",
-      accent: "from-cyan-600 to-teal-700",
-      borderAccent: "border-cyan-500",
-      badgeColor: "bg-cyan-100 text-cyan-800",
-    },
-    {
-      id: "C",
-      title: "Make HSIC the First Choice",
-      subtitle: "Win Back Share from Competing Credit and Debit Cards",
-      segmentName: "Segment C — Competing Card Switchers",
-      customerCount: 1145,
-      targetSpendPool: 9328142,
-      nonHsicLeakage: 8139847,
-      duration: "90 Days (Quarterly Campaign)",
-      eligibility: "Active cardholders in Segment C using rival debit or credit cards at MetroMart",
-      behavior: "Customers shifted +4.16 pp to Debit Cards and +5.04 pp to Other Bank Credit Cards (HDFC, ICICI, SBI, Axis). They are multi-cardholders actively utilizing competitor reward schemes.",
-      problem: "HSIC is relegated to the second or third slot in physical and digital wallets, losing high-margin spend to competitors despite offering superior contractual cashback.",
-      intervention: [
-        "Intervention 1 (Top Category Match Booster): Cardholder receives an additional 2% promotional cashback in their individual highest spending category for 90 days (boosting Grocery to 7% or Electronics to 5%).",
-        "Intervention 2 (Festive Shopping Milestone): ₹500 MetroMart gift voucher upon reaching ₹15,000 quarterly spend on the HSIC card.",
-        "Intervention 3 (Direct Value Comparison Statement): Personalized email/SMS notification showing exact rupees lost by paying with rival bank cards vs HSIC card.",
-      ],
-      kpis: [
-        "Reduce competing card SoW from 23.4% down to under 10%",
-        "Win back 25%+ of rival card transaction volume (₹2.3M+ in spending)",
-        "Reactivate 280+ displaced cardholders",
-      ],
-      rationale: "Multi-card holders are highly reward-rational. A category booster and milestone voucher clearly overcomes competitor bank marketing and reclaims wallet dominance.",
-      accent: "from-blue-600 to-indigo-800",
-      borderAccent: "border-blue-500",
-      badgeColor: "bg-blue-100 text-blue-800",
-    },
-    {
-      id: "D",
-      title: "High-Value VIP Customer Retention Offer",
-      subtitle: "Protect Top-Decile Spenders Experiencing Rapid Attrition",
-      segmentName: "Segment D — High-Value Rapid Decliners",
-      customerCount: 1701,
-      targetSpendPool: 47024605,
-      nonHsicLeakage: 41470878,
-      duration: "90 Days (Festive Season Q3)",
-      eligibility: "Top 25% annual spenders (₹17,998+ annual spend) with ≥20 pp HSIC SoW drop",
-      behavior: "Spends an average of ₹27,645/year at MetroMart, but HSIC share collapsed from 45%+ down to 11.8%. They have shifted over ₹41.4M to alternative payment channels.",
-      problem: "High-volume, highly lucrative customer relationships are experiencing severe silent attrition. Losing these accounts causes disproportionate financial damage to the portfolio.",
-      intervention: [
-        "VIP Perk 1 (Tiered Festive Vouchers): ₹1,000 MetroMart gift voucher on ₹25,000 cumulative HSIC spend; ₹2,000 voucher on ₹40,000 spend during the festive quarter.",
-        "VIP Perk 2 (Flat 5% Uncapped Everywhere): Promotional uncapped 5% cashback across ALL MetroMart merchandise categories (not just Grocery) for 90 days.",
-        "VIP Perk 3 (Executive Concierge & Priority Delivery): Complimentary 1-year MetroMart Express Delivery waiver and priority customer service phone line.",
-      ],
-      kpis: [
-        "Reactivate 25%+ VIP accounts (425+ high-value customers)",
-        "Recover ₹15.0M+ in HSIC card transaction volume",
-        "Restore average HSIC SoW from 11.8% back to 40%+",
-      ],
-      rationale: "Highest ROI intervention in the portfolio. Although representing only 16.2% of decliners, Segment D controls ₹47.0M in spending. Winning back 25% of this segment recovers more revenue than segments B and C combined.",
-      accent: "from-amber-500 to-amber-700",
-      borderAccent: "border-amber-400",
-      badgeColor: "bg-amber-100 text-amber-900 font-bold",
-    },
-  ];
-
-  const displayedStrategies =
-    activeStrategy === "all" ? strategies : strategies.filter((s) => s.id === activeStrategy);
+  const segments = SIX_CUSTOMER_SEGMENTS;
+  const currentSeg = segments.find((s) => s.id === selectedSegmentId) || segments[0];
+  const pilot = PILOT_DESIGN;
 
   return (
     <div className="space-y-6">
-      {/* Header and Filter */}
+      {/* Header */}
       <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900 flex items-center space-x-2">
             <Target className="w-5 h-5 text-amber-500" />
-            <span>Targeted Customer Recovery Strategies</span>
+            <span>Targeted Strategies: &ldquo;Reward at the Register&rdquo;</span>
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Segment-specific campaign blueprints designed to reverse silent attrition and lift HSIC Share of Wallet
+            Two-layer behavioral architecture &amp; randomized controlled trial (RCT) protocol
           </p>
         </div>
 
-        {/* Strategy Filter Tabs */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200 text-xs">
-          <button
-            onClick={() => setActiveStrategy("all")}
-            className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-              activeStrategy === "all"
-                ? "bg-white text-slate-900 font-bold shadow-sm"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            All 4 Strategies
-          </button>
-          {strategies.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setActiveStrategy(s.id)}
-              className={`px-2.5 py-1.5 rounded-md font-medium transition-all ${
-                activeStrategy === s.id
-                  ? "bg-white text-slate-900 font-bold shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Seg {s.id}
-            </button>
-          ))}
+        <div className="flex items-center space-x-2">
+          <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+            Intended Target: 8,758 Decliners (A–D) + 4,830 Low-SoW (E)
+          </span>
         </div>
       </div>
 
-      {/* Strategies Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {displayedStrategies.map((strat) => (
-          <div
-            key={strat.id}
-            className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow"
-          >
+      {/* TWO-LAYER STRATEGY ARCHITECTURE DIAGRAM */}
+      <div className="bg-gradient-to-r from-slate-900 via-[#0B1A36] to-slate-900 text-white rounded-2xl p-6 border border-slate-800 shadow-xl space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Sparkles className="w-5 h-5 text-amber-400" />
+            <h3 className="text-base font-extrabold text-white uppercase tracking-wider">
+              Two-Layer Strategy Architecture
+            </h3>
+          </div>
+          <span className="text-xs font-mono font-bold text-amber-400 bg-amber-400/10 px-2.5 py-0.5 rounded border border-amber-400/20">
+            Provisional Strategy Framework
+          </span>
+        </div>
+
+        {/* Workflow Diagram */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+          {/* Step 1 */}
+          <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/10 flex flex-col justify-between">
             <div>
-              {/* Strategy Header Banner */}
-              <div className={`p-6 bg-gradient-to-r ${strat.accent} text-white`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold tracking-wider uppercase bg-white/20 backdrop-blur-sm px-2.5 py-0.5 rounded-full">
-                    {strat.segmentName}
-                  </span>
-                  <div className="flex items-center space-x-1 text-xs font-semibold bg-black/20 px-2 py-0.5 rounded">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{strat.duration}</span>
-                  </div>
-                </div>
-
-                <h3 className="text-xl font-extrabold text-white">{strat.title}</h3>
-                <p className="text-xs text-white/80 mt-1">{strat.subtitle}</p>
-
-                {/* Metrics ribbon */}
-                <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/20 text-xs">
-                  <div>
-                    <span className="text-[10px] text-white/70 block">Target Audience</span>
-                    <span className="font-extrabold text-white text-sm">
-                      {formatNumber(strat.customerCount)} Accounts
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-white/70 block">Total Spend Pool</span>
-                    <span className="font-extrabold text-white text-sm">
-                      {formatINR(strat.targetSpendPool)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-white/70 block">Non-HSIC Leakage</span>
-                    <span className="font-extrabold text-amber-300 text-sm">
-                      {formatINR(strat.nonHsicLeakage)}
-                    </span>
-                  </div>
-                </div>
+              <div className="flex items-center justify-between text-blue-300 font-bold mb-2">
+                <span>01. Layer 1 Visibility</span>
+                <Eye className="w-4 h-4" />
               </div>
-
-              {/* Strategy Body Content */}
-              <div className="p-6 space-y-4 text-xs">
-                {/* Behavioral & Business Problem Diagnostic */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
-                  <div>
-                    <strong className="text-slate-900 block font-semibold mb-1">Customer Behavior:</strong>
-                    <p className="text-slate-600 leading-relaxed text-[11px]">{strat.behavior}</p>
-                  </div>
-                  <div>
-                    <strong className="text-slate-900 block font-semibold mb-1">Core Business Problem:</strong>
-                    <p className="text-slate-600 leading-relaxed text-[11px]">{strat.problem}</p>
-                  </div>
-                </div>
-
-                {/* Proposed Intervention Blueprint */}
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-1.5 font-bold text-slate-900 text-xs">
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    <span>Proposed Campaign Interventions:</span>
-                  </div>
-                  <div className="space-y-2">
-                    {strat.intervention.map((step, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-start space-x-2.5 p-2.5 rounded-lg bg-white border border-slate-200"
-                      >
-                        <span className="w-5 h-5 rounded-full bg-slate-900 text-amber-400 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
-                          {idx + 1}
-                        </span>
-                        <p className="text-slate-700 text-[11px] leading-relaxed">{step}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Key Success Metrics */}
-                <div className="space-y-1.5 pt-1">
-                  <strong className="text-slate-900 block font-semibold text-xs">Success Metrics &amp; KPIs:</strong>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {strat.kpis.map((kpi, idx) => (
-                      <div
-                        key={idx}
-                        className="p-2 rounded-lg bg-emerald-50/60 border border-emerald-200 text-emerald-900 text-[11px] font-medium"
-                      >
-                        {kpi}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <strong className="text-white block text-sm mb-1">Make Rewards Visible</strong>
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                Reward Preview at basket checkout + monthly Missed Cashback Meter. Free to run—zero extra promotional reward cost.
+              </p>
             </div>
-
-            {/* Strategy Footer */}
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-500 font-medium">Modular Strategy Component</span>
-              <button
-                onClick={() => onNavigate("financial-models")}
-                className="font-bold inline-flex items-center space-x-1.5 text-slate-900 hover:text-amber-600 transition-colors"
-              >
-                <span>Model Financial ROI</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+            <div className="mt-3 pt-2 border-t border-white/10 text-[10px] text-emerald-400 font-semibold">
+              Applies to Segments A, B, C, D &amp; E
             </div>
           </div>
-        ))}
+
+          {/* Step 2 */}
+          <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/10 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-amber-300 font-bold mb-2">
+                <span>02. Response Filter</span>
+                <Clock className="w-4 h-4" />
+              </div>
+              <strong className="text-white block text-sm mb-1">8-Week Response Gate</strong>
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                Measure organic uplift in Stage 1. Cardholders who respond naturally continue without costly incentives.
+              </p>
+            </div>
+            <div className="mt-3 pt-2 border-t border-white/10 text-[10px] text-amber-300 font-semibold">
+              Avoids Deadweight Incentive Cost
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/10 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-rose-300 font-bold mb-2">
+                <span>03. Layer 2 Capped Incentive</span>
+                <Gift className="w-4 h-4" />
+              </div>
+              <strong className="text-white block text-sm mb-1">Eligible Non-Responders</strong>
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                0.5% bonus on incremental spend above baseline. Strict caps: 25 units/cust, 25k units total. Non-Prime prioritized.
+              </p>
+            </div>
+            <div className="mt-3 pt-2 border-t border-white/10 text-[10px] text-rose-300 font-semibold">
+              No extra rewards on Prime Grocery
+            </div>
+          </div>
+
+          {/* Step 4 */}
+          <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/10 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-emerald-300 font-bold mb-2">
+                <span>04. Controlled Evaluation</span>
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+              <strong className="text-white block text-sm mb-1">50/50 RCT &amp; Holdout</strong>
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                Measure true incremental uplift against uncontacted control group. 20% persistence holdout verifies habit retention.
+              </p>
+            </div>
+            <div className="mt-3 pt-2 border-t border-white/10 text-[10px] text-emerald-400 font-semibold">
+              Guards against regression to mean
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Campaign Disclaimer & Methodology Callout */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-xs text-slate-600 flex items-center justify-between">
-        <span>
-          <strong>Campaign Governance:</strong> Proposed interventions are subject to business case approval, financial hurdle rates, and pilot testing before full portfolio rollout.
-        </span>
-        <button
-          onClick={() => onNavigate("financial-models")}
-          className="font-bold text-amber-600 hover:text-amber-700 whitespace-nowrap ml-4"
-        >
-          Proceed to Financial Models →
-        </button>
+      {/* ILLUSTRATIVE MISSED CASHBACK METER CARD */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div className="flex items-center space-x-2">
+            <Eye className="w-5 h-5 text-amber-500" />
+            <h3 className="font-bold text-slate-900 text-sm">
+              Layer 1 Illustrative Feature: The Missed Cashback Meter
+            </h3>
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-[11px] font-semibold text-slate-500">Simulate Member Tier:</span>
+            <button
+              onClick={() => setMeterPrimeStatus("prime")}
+              className={`px-2.5 py-1 rounded text-xs font-semibold ${
+                meterPrimeStatus === "prime" ? "bg-amber-400 text-slate-950 font-bold" : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              Prime Member
+            </button>
+            <button
+              onClick={() => setMeterPrimeStatus("non-prime")}
+              className={`px-2.5 py-1 rounded text-xs font-semibold ${
+                meterPrimeStatus === "non-prime" ? "bg-slate-900 text-white font-bold" : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              Non-Prime Member
+            </button>
+          </div>
+        </div>
+
+        {/* The Card Component */}
+        <div className="max-w-2xl mx-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-xl p-5 border border-slate-700 shadow-lg space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+            <div className="flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                Monthly Reward Opportunity Summary (Illustrative Concept Only)
+              </span>
+            </div>
+            <span className="text-[10px] text-amber-300 font-mono bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+              Not a Credit
+            </span>
+          </div>
+
+          <div className="space-y-2 text-xs">
+            <p className="text-slate-300 text-[11px] leading-relaxed">
+              Based on your eligible MetroMart purchases paid via other payment methods over the past 30 days:
+            </p>
+
+            <div className="grid grid-cols-3 gap-2 py-2">
+              <div className="p-2 rounded bg-white/5 border border-white/10 text-center">
+                <span className="text-[10px] text-slate-400 block">Eligible Grocery</span>
+                <span className="font-bold text-white text-xs">8,000 units</span>
+                <span className="text-[10px] text-amber-400 block mt-0.5">
+                  {meterPrimeStatus === "prime" ? "5% = 400 units" : "1% = 80 units"}
+                </span>
+              </div>
+              <div className="p-2 rounded bg-white/5 border border-white/10 text-center">
+                <span className="text-[10px] text-slate-400 block">Eligible Electronics</span>
+                <span className="font-bold text-white text-xs">3,000 units</span>
+                <span className="text-[10px] text-amber-400 block mt-0.5">
+                  {meterPrimeStatus === "prime" ? "3% = 90 units" : "1% = 30 units"}
+                </span>
+              </div>
+              <div className="p-2 rounded bg-white/5 border border-white/10 text-center">
+                <span className="text-[10px] text-slate-400 block">Other Categories</span>
+                <span className="font-bold text-white text-xs">2,000 units</span>
+                <span className="text-[10px] text-amber-400 block mt-0.5">1% = 20 units</span>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-400/30 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] text-slate-300 block">Total Estimated Unclaimed Rewards:</span>
+                <span className="text-xs font-semibold text-white">
+                  {meterPrimeStatus === "prime" ? "510 potential reward units" : "130 potential reward units"}
+                </span>
+              </div>
+              <span className="text-xl font-black text-amber-400">
+                {meterPrimeStatus === "prime" ? "510 Units" : "130 Units"}
+              </span>
+            </div>
+
+            <p className="text-[10px] text-slate-400 italic leading-relaxed pt-1">
+              &ldquo;Your eligible MetroMart purchases made using other payment methods could have earned approximately {meterPrimeStatus === "prime" ? "510" : "130"} units in HSIC rewards. This is an estimate, not a credit.&rdquo;
+            </p>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-slate-500 text-center">
+          *Note: Meter production requires appropriate access to category, payment-method, and return data, plus data-sharing, privacy, consent, and compliance sign-off.
+        </p>
+      </div>
+
+      {/* SEGMENT-SPECIFIC STRATEGY EXPLORER */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <h3 className="font-bold text-slate-900 text-base">
+              Segment Intervention Blueprints (6 Standard Dimensions)
+            </h3>
+            <p className="text-xs text-slate-500">
+              Select a segment to examine observation, hypothesis, intervention, metrics, guardrails, and failure protocol
+            </p>
+          </div>
+
+          {/* Segment Selector Pills */}
+          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200 text-xs">
+            {segments.map((seg) => {
+              const isSelected = selectedSegmentId === seg.id;
+              const color = SEGMENT_COLORS[seg.id] || "#64748B";
+              return (
+                <button
+                  key={seg.id}
+                  onClick={() => setSelectedSegmentId(seg.id)}
+                  className={`px-3 py-1.5 rounded-md font-semibold transition-all flex items-center space-x-1.5 ${
+                    isSelected
+                      ? "bg-white text-slate-900 font-bold shadow-sm border border-slate-200"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                  <span>{seg.id}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Segment Strategy Card (6 Dimensions) */}
+        <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                {currentSeg.code} • {currentSeg.category}
+              </span>
+              <h4 className="text-lg font-extrabold text-slate-900 mt-0.5">
+                Strategy: {currentSeg.strategyName}
+              </h4>
+            </div>
+            <div className="text-right">
+              <span className="text-xs text-slate-500 font-medium block">Target Population:</span>
+              <span className="text-base font-extrabold text-slate-900">
+                {formatNumber(currentSeg.customerCount)} Customers ({currentSeg.shareOfCohort}% of cohort)
+              </span>
+            </div>
+          </div>
+
+          {/* 6 Dimensions Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+            {/* Dim 1: Observed */}
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-1">
+              <span className="font-bold text-slate-900 flex items-center space-x-1 text-xs">
+                <span className="w-2 h-2 rounded-full bg-slate-700" />
+                <span>1. What We Observed</span>
+              </span>
+              <p className="text-slate-600 text-[11px] leading-relaxed pt-1">{currentSeg.behavior}</p>
+              <div className="pt-2 text-[10px] text-slate-400 font-mono">
+                SoW: {currentSeg.sowFY25}% ➔ {currentSeg.sowFY26}% ({currentSeg.declinePp} pp)
+              </div>
+            </div>
+
+            {/* Dim 2: Hypothesis */}
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-1">
+              <span className="font-bold text-amber-800 flex items-center space-x-1 text-xs">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span>2. Why It May Happen (Hypothesis)</span>
+              </span>
+              <p className="text-slate-600 text-[11px] leading-relaxed pt-1">{currentSeg.hypothesis}</p>
+              <div className="pt-2 text-[10px] text-amber-700 font-semibold italic">
+                Treated as hypothesis to test, not proven causality.
+              </div>
+            </div>
+
+            {/* Dim 3: What We Will Do */}
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-1">
+              <span className="font-bold text-blue-800 flex items-center space-x-1 text-xs">
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                <span>3. What We Will Do</span>
+              </span>
+              <div className="text-slate-700 text-[11px] leading-relaxed pt-1 space-y-1">
+                <div><strong>Layer 1:</strong> {currentSeg.layer1Intervention}</div>
+                <div><strong>Layer 2:</strong> {currentSeg.layer2Intervention}</div>
+              </div>
+            </div>
+
+            {/* Dim 4: Measurement */}
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-1">
+              <span className="font-bold text-emerald-800 flex items-center space-x-1 text-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span>4. How We Measure It</span>
+              </span>
+              <p className="text-slate-600 text-[11px] leading-relaxed pt-1">{currentSeg.successMetric}</p>
+              <div className="pt-2 text-[10px] text-emerald-700 font-semibold">
+                Provisional break-even uplift: +{currentSeg.breakEvenPp} pp
+              </div>
+            </div>
+
+            {/* Dim 5: Guardrails */}
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-1">
+              <span className="font-bold text-rose-800 flex items-center space-x-1 text-xs">
+                <span className="w-2 h-2 rounded-full bg-rose-500" />
+                <span>5. Guardrails &amp; Risk</span>
+              </span>
+              <p className="text-slate-600 text-[11px] leading-relaxed pt-1">{currentSeg.guardrail}</p>
+            </div>
+
+            {/* Dim 6: What If It Fails */}
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 space-y-1">
+              <span className="font-bold text-purple-800 flex items-center space-x-1 text-xs">
+                <span className="w-2 h-2 rounded-full bg-purple-500" />
+                <span>6. What We Do If It Fails</span>
+              </span>
+              <p className="text-slate-600 text-[11px] leading-relaxed pt-1">{currentSeg.failAction}</p>
+              <div className="pt-2 text-[10px] text-slate-500 font-medium">
+                Lead Owner: {currentSeg.owner}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* RANDOMIZED CONTROLLED PILOT (RCT) DESIGN PANEL */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-5">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center space-x-2">
+            <Clock className="w-5 h-5 text-amber-500" />
+            <h3 className="font-bold text-slate-900 text-base">
+              Controlled Pilot Protocol &amp; Measurement Timeline
+            </h3>
+          </div>
+          <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
+            26-Week Controlled Evaluation
+          </span>
+        </div>
+
+        {/* 4 Pilot Stages Timeline */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+          {pilot.timelineStages.map((stage: any, idx: number) => (
+            <div key={idx} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+                <span>{stage.weeks}</span>
+                <span className="w-5 h-5 rounded-full bg-slate-900 text-amber-400 font-bold text-[10px] flex items-center justify-center">
+                  {idx + 1}
+                </span>
+              </div>
+              <h4 className="font-bold text-slate-900 text-xs">{stage.title}</h4>
+              <p className="text-slate-600 text-[11px] leading-relaxed">{stage.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Pilot Decision Pathway: Scale / Revise / Stop */}
+        <div className="bg-slate-900 text-white p-5 rounded-xl border border-slate-800 space-y-3">
+          <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-amber-400">
+            <span>Pre-Specified Decision Pathway</span>
+            <span>Pre-Registration Required</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-300">
+            <div className="p-3 rounded-lg bg-white/5 border border-emerald-500/30">
+              <strong className="text-emerald-400 block text-xs mb-1">Scale Criteria:</strong>
+              {pilot.decisionPathway.scaleCriteria}
+            </div>
+            <div className="p-3 rounded-lg bg-white/5 border border-amber-400/30">
+              <strong className="text-amber-400 block text-xs mb-1">Revise Criteria:</strong>
+              {pilot.decisionPathway.reviseCriteria}
+            </div>
+            <div className="p-3 rounded-lg bg-white/5 border border-rose-500/30">
+              <strong className="text-rose-400 block text-xs mb-1">Stop Criteria:</strong>
+              {pilot.decisionPathway.stopCriteria}
+            </div>
+          </div>
+        </div>
+
+        {/* Ownership & Feasibility Responsibilities */}
+        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+          <h4 className="font-bold text-slate-900">Governance &amp; Partner Feasibility Matrix</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-slate-600 text-[11px] leading-relaxed pt-1">
+            <div>
+              <strong className="text-slate-900 block font-semibold">HSIC Responsibilities:</strong>
+              Reward rules/rates, active-card verification, reward calculation engine, issuer/network compliance sign-off, risk exclusions, and approved incentive funding.
+            </div>
+            <div>
+              <strong className="text-slate-900 block font-semibold">MetroMart Responsibilities:</strong>
+              Basket category/payment data under approved data-sharing arrangement, customer-facing placement, wallet/message UI, random assignment execution, and control-group discipline.
+            </div>
+            <div>
+              <strong className="text-slate-900 block font-semibold">Joint / Finance Responsibilities:</strong>
+              Validate contribution margins, verify category-level economics (especially Prime Grocery), audit payout budget, and enforce responsible lending rules.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -11,11 +11,15 @@ import {
   Smartphone,
   Layers,
   Target,
-  BarChart3,
+  Sparkles,
   CheckCircle2,
+  HelpCircle,
+  Clock,
+  Split,
+  Eye,
 } from "lucide-react";
-import { EXECUTIVE_OVERVIEW_DATA } from "@/lib/data/dataset";
-import { formatINR, formatNumber } from "@/lib/utils";
+import { EXECUTIVE_OVERVIEW_DATA, FIXED_COHORT_SUMMARY } from "@/lib/data/dataset";
+import { formatNumber, formatUnits } from "@/lib/utils";
 
 interface ExecutiveOverviewProps {
   onNavigate: (sectionId: string) => void;
@@ -23,12 +27,12 @@ interface ExecutiveOverviewProps {
 
 export default function ExecutiveOverview({ onNavigate }: ExecutiveOverviewProps) {
   const workflowStages = [
-    { id: "explorer", label: "Original Data", desc: "4 Core CSV datasets", sub: "45K Customers & 444K Transactions" },
-    { id: "eda", label: "Colab EDA", desc: "Customer Demographics & Patterns", sub: "Sales, returns, active periods" },
-    { id: "sow", label: "Share of Wallet", desc: "FY25 vs FY26 Shift", sub: "HSIC decline of -9.46 pp" },
-    { id: "segmentation", label: "Declining Cohort & Segments", desc: "10,498 Customers (Priority D>A>B>C)", sub: "Mutually exclusive groups" },
-    { id: "strategies", label: "Targeted Strategies", desc: "4 Tailored Interventions", sub: "Wallet, UPI, Card & VIP" },
-    { id: "financial-models", label: "Financial Models", desc: "Scenario ROI & Break-Even", sub: "Net Contribution Impact" },
+    { id: "explorer", label: "Original Data", desc: "4 Core CSV Datasets", sub: "45K Customers & 444K Transactions" },
+    { id: "eda", label: "Colab EDA", desc: "Demographics & Dynamics", sub: "Active periods & net sales rules" },
+    { id: "sow", label: "Share of Wallet", desc: "FY25 vs FY26 Erosion", sub: "-9.46 pp portfolio SoW drop" },
+    { id: "segmentation", label: "6 Customer Segments", desc: "20,779 Fixed Cohort", sub: "8,758 Decliners & 4,830 Low-SoW" },
+    { id: "strategies", label: "Reward at Register", desc: "Two-Layer Strategy & Pilot", sub: "Layer 1 Visibility + Layer 2 RCT" },
+    { id: "financial-models", label: "Financial Models", desc: "Scenario ROI & Break-Even", sub: "1.607% Margin & Prime Warning" },
   ];
 
   return (
@@ -38,27 +42,29 @@ export default function ExecutiveOverview({ onNavigate }: ExecutiveOverviewProps
         <div className="absolute -right-16 -top-16 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 max-w-4xl space-y-3">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-semibold">
-            <span>Synchrony Analytics Portfolio Diagnostic</span>
+            <span>Synchrony Analytics Hackathon 2026</span>
             <span>•</span>
-            <span>FY2025 – FY2026</span>
+            <span>MetroMart Inc. × HSIC Bank Co-Brand Study</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
             MetroMart × HSIC Customer Analytics
           </h1>
           <p className="text-base sm:text-lg text-slate-300 font-medium">
-            Understanding Share of Wallet Decline and Identifying Customer Recovery Opportunities
+            Understanding Share of Wallet Decline and Evaluating the &ldquo;Reward at the Register&rdquo; Strategy
           </p>
           <div className="pt-2 text-sm text-slate-300 leading-relaxed border-t border-slate-800/80">
-            <span className="text-amber-300 font-semibold">Core Business Problem:</span> Many customers holding the
-            MetroMart–HSIC co-branded credit card continue to actively shop at MetroMart Inc., yet they are shifting
-            substantial spending away from the HSIC card toward alternative payment methods—predominantly the MetroMart
-            stored-value wallet, instant Cash/UPI, and competing bank cards. This &ldquo;silent attrition&rdquo; erodes high-margin
-            interchange and co-brand relationship value without visible store-level churn.
+            <span className="text-amber-300 font-semibold">The Core Business Problem:</span> MetroMart customers continue
+            to shop actively at MetroMart Inc., but the HSIC co-branded card share of their MetroMart spend has declined
+            sharply. Alternative payment methods (MetroMart Wallet, Cash/UPI, and competing bank cards) have gained share.
+            The data demonstrates <em>where</em> spending migrated, but not necessarily <em>why</em>. Rather than rolling out
+            a blanket cash incentive that risks severe deadweight costs, we introduce a disciplined two-layer strategy:
+            first making existing contractual rewards visible at the point of sale, offering a capped incentive only to
+            eligible non-responders, and proving true incremental uplift via a randomized controlled pilot.
           </div>
         </div>
       </div>
 
-      {/* Analytical Journey Stepper (Whiteboard Workflow Reference) */}
+      {/* Analytical Workflow Stepper (Whiteboard Workflow Reference) */}
       <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
@@ -94,7 +100,7 @@ export default function ExecutiveOverview({ onNavigate }: ExecutiveOverviewProps
         </div>
       </div>
 
-      {/* Verified KPI Cards */}
+      {/* Verified Baseline KPI Cards */}
       <div>
         <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">
           Verified Portfolio Baseline Metrics
@@ -106,7 +112,7 @@ export default function ExecutiveOverview({ onNavigate }: ExecutiveOverviewProps
             <div className="text-xl font-extrabold text-slate-900 mt-1">
               {formatNumber(EXECUTIVE_OVERVIEW_DATA.totalCustomers)}
             </div>
-            <div className="text-[11px] text-slate-600 mt-1">Unique Account Records</div>
+            <div className="text-[11px] text-slate-600 mt-1">Full Demographic File</div>
           </div>
 
           {/* Card 2 */}
@@ -120,62 +126,149 @@ export default function ExecutiveOverview({ onNavigate }: ExecutiveOverviewProps
 
           {/* Card 3 */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <div className="text-xs text-slate-600 font-medium">FY2025 HSIC SoW</div>
+            <div className="text-xs text-slate-600 font-medium">Fixed 2-Yr Cohort</div>
             <div className="text-xl font-extrabold text-slate-900 mt-1">
-              {EXECUTIVE_OVERVIEW_DATA.fy2025HsicSow}%
+              {formatNumber(FIXED_COHORT_SUMMARY.totalCohort)}
             </div>
-            <div className="text-[11px] text-slate-600 mt-1">Baseline Portfolio Share</div>
+            <div className="text-[11px] text-slate-600 mt-1">Positive Spend Both FYs</div>
           </div>
 
           {/* Card 4 */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <div className="text-xs text-slate-600 font-medium">FY2026 HSIC SoW</div>
+            <div className="text-xs text-slate-600 font-medium">Portfolio HSIC SoW</div>
             <div className="text-xl font-extrabold text-slate-900 mt-1">
-              {EXECUTIVE_OVERVIEW_DATA.fy2026HsicSow}%
+              28.97% ➔ 19.51%
             </div>
-            <div className="text-[11px] text-slate-600 mt-1">Post-Shift Portfolio Share</div>
+            <div className="text-[11px] text-rose-600 font-bold mt-1">-9.46 pp Portfolio Shift</div>
           </div>
 
           {/* Card 5 */}
           <div className="bg-white p-4 rounded-xl border border-rose-200 bg-rose-50/30 shadow-sm">
-            <div className="text-xs text-rose-700 font-medium">Portfolio HSIC Change</div>
+            <div className="text-xs text-rose-700 font-medium">Target Decliners (A–D)</div>
             <div className="text-xl font-extrabold text-rose-600 mt-1">
-              {EXECUTIVE_OVERVIEW_DATA.hsicSowChange} pp
+              {formatNumber(FIXED_COHORT_SUMMARY.declinersTotal)}
             </div>
-            <div className="text-[11px] text-rose-600 mt-1">Net Share Loss</div>
+            <div className="text-[11px] text-rose-600 mt-1">Decline ≥10 pp (120M spend)</div>
           </div>
 
           {/* Card 6 */}
           <div className="bg-white p-4 rounded-xl border border-amber-200 bg-amber-50/20 shadow-sm">
-            <div className="text-xs text-amber-800 font-medium">Declining Customers</div>
+            <div className="text-xs text-amber-800 font-medium">Persistently Low (E)</div>
             <div className="text-xl font-extrabold text-amber-700 mt-1">
-              {formatNumber(EXECUTIVE_OVERVIEW_DATA.decliningCustomersCount)}
+              {formatNumber(FIXED_COHORT_SUMMARY.persistentlyLowTotal)}
             </div>
-            <div className="text-[11px] text-amber-800 mt-1">Individual SoW Decliners</div>
+            <div className="text-[11px] text-amber-800 mt-1">SoW &lt;10% in Both FYs</div>
           </div>
 
           {/* Card 7 */}
           <div className="bg-white p-4 rounded-xl border border-emerald-200 bg-emerald-50/30 shadow-sm">
-            <div className="text-xs text-emerald-800 font-medium">Segmented Customers</div>
+            <div className="text-xs text-emerald-800 font-medium">Improvers / Stable</div>
             <div className="text-xl font-extrabold text-emerald-700 mt-1">
-              {formatNumber(EXECUTIVE_OVERVIEW_DATA.segmentCustomersCount)}
+              {formatNumber(FIXED_COHORT_SUMMARY.improversTotal)}
             </div>
-            <div className="text-[11px] text-emerald-700 mt-1">100% Mutually Exclusive</div>
+            <div className="text-[11px] text-emerald-700 mt-1">SoW 14.3% ➔ 40.5% (No offer)</div>
           </div>
         </div>
       </div>
 
-      {/* Key Analytical Findings Grid */}
+      {/* The Core Strategy Presentation: "Reward at the Register" */}
+      <div className="bg-white rounded-2xl p-6 border-2 border-amber-400/40 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center font-black text-sm">
+              R
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900">
+                Core Strategy: &ldquo;Reward at the Register&rdquo;
+              </h2>
+              <p className="text-xs text-slate-500">
+                Make existing contractual rewards visible at the moment of payment; offer extra rewards only to eligible non-responders.
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-200 self-start sm:self-auto">
+            Provisional Design • Subject to Risk &amp; Finance Approval
+          </span>
+        </div>
+
+        {/* Two Layer Architecture Visualization */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          {/* Layer 1 Box */}
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-900">
+                <Eye className="w-3.5 h-3.5" />
+                <span>Layer 1: Reward Visibility</span>
+              </span>
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                Zero Extra Reward Cost
+              </span>
+            </div>
+            <h3 className="text-sm font-bold text-slate-900">Reward Preview &amp; Missed Cashback Meter</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Display an estimate of the HSIC rewards a cardholder could earn on their current eligible basket at checkout,
+              plus a monthly &ldquo;Missed Cashback Meter&rdquo; estimating rewards that eligible MetroMart purchases paid with
+              other methods could have earned under existing contractual rates (5% Prime Grocery, 3% Prime Electronics, 1% Other).
+            </p>
+            <div className="p-2.5 bg-white rounded-lg border border-slate-200 text-[11px] text-slate-700 italic">
+              &ldquo;Your eligible MetroMart purchases made using other payment methods could have earned approximately 510 units in HSIC rewards. This is an estimate, not a credit.&rdquo;
+            </div>
+          </div>
+
+          {/* Layer 2 Box */}
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Layer 2: Capped Incremental Incentive</span>
+              </span>
+              <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                Eligible Non-Responders Only
+              </span>
+            </div>
+            <h3 className="text-sm font-bold text-slate-900">Controlled Non-Responder Incentive (RCT)</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Offered strictly to cardholders who showed no response to Layer 1 during the initial 8-week test window.
+              Provides a tightly capped <strong>0.5% bonus</strong> on positive incremental HSIC spend above an 8-week baseline,
+              capped at <strong>25 source units per customer</strong> and a total payout ceiling of <strong>25,000 source units</strong>.
+            </p>
+            <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
+              <div className="bg-white p-2 rounded border border-slate-200">
+                <span className="text-slate-500 block">Eligibility Gate:</span>
+                <span className="font-semibold text-slate-800">≥1,500 units pre-period non-HSIC spend</span>
+              </div>
+              <div className="bg-white p-2 rounded border border-slate-200">
+                <span className="text-slate-500 block">Risk Guardrail:</span>
+                <span className="font-semibold text-rose-700">No extra rewards on Prime Grocery</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-2 text-xs text-slate-500 flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-100 gap-2">
+          <span>Controlled via a 4-Stage Randomized Controlled Trial (RCT) against an uncontacted holdout control group.</span>
+          <button
+            onClick={() => onNavigate("strategies")}
+            className="font-bold text-amber-600 hover:text-amber-700 inline-flex items-center space-x-1"
+          >
+            <span>Explore Pilot Timeline &amp; Protocol</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Six Key Analytical Insights Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {/* Finding 1: Portfolio HSIC Decline */}
+        {/* Finding 1 */}
         <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
             <div className="w-9 h-9 rounded-lg bg-rose-100 flex items-center justify-center text-rose-600 mb-3">
               <TrendingDown className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-sm">Overall Portfolio HSIC SoW Trend</h3>
+            <h3 className="font-bold text-slate-900 text-sm">Portfolio-Wide Share of Wallet Erosion</h3>
             <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-              HSIC co-branded card wallet share at MetroMart plummeted by <strong className="text-rose-600">9.46 percentage points</strong> (from 28.97% in FY2025 to 19.51% in FY2026). This reflects a systemic silent attrition where active cardholders keep patronizing MetroMart but substitute away from HSIC at checkout.
+              HSIC co-branded card wallet share at MetroMart dropped by <strong className="text-rose-600">9.46 percentage points</strong> (from 28.97% in FY2025 to 19.51% in FY2026). MetroMart Wallet (+1.27 pp) and Cash/UPI (+4.48 pp) gained share, showing payment method substitution across store visits.
             </p>
           </div>
           <button
@@ -187,102 +280,35 @@ export default function ExecutiveOverview({ onNavigate }: ExecutiveOverviewProps
           </button>
         </div>
 
-        {/* Finding 2: Payment Methods Gaining Share */}
+        {/* Finding 2 */}
         <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
             <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 mb-3">
-              <Wallet className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-slate-900 text-sm">Alternative Payment Methods Gaining Share</h3>
-            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-              The 9.46 pp HSIC loss was absorbed across all alternative payment methods:
-            </p>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              {EXECUTIVE_OVERVIEW_DATA.alternativePaymentGains.map((item) => (
-                <div key={item.method} className="bg-slate-50 p-2 rounded border border-slate-100">
-                  <div className="text-[11px] font-medium text-slate-600">{item.method}</div>
-                  <div className="text-xs font-bold text-emerald-600">{item.changePp} ({item.fy26Share})</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <button
-            onClick={() => onNavigate("sow")}
-            className="mt-4 inline-flex items-center text-xs font-semibold text-amber-600 hover:text-amber-700 group"
-          >
-            <span>Examine Monthly SoW Shifts</span>
-            <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
-          </button>
-        </div>
-
-        {/* Finding 3: The Declining HSIC Cohort */}
-        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="w-9 h-9 rounded-lg bg-rose-100 flex items-center justify-center text-rose-600 mb-3">
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-slate-900 text-sm">The 10,498 Declining-HSIC Cohort</h3>
-            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-              Among customers whose individual HSIC SoW declined, the collapse is severe: HSIC share fell from <strong className="text-slate-900">43.15%</strong> in FY2025 down to just <strong className="text-rose-600">9.98%</strong> in FY2026—a plunge of <strong className="text-rose-600">33.17 pp</strong>.
-              In this group, MetroMart Wallet surged by <strong className="text-emerald-600">+13.03 pp</strong> and Cash/UPI by <strong className="text-emerald-600">+10.93 pp</strong>.
-            </p>
-          </div>
-          <button
-            onClick={() => onNavigate("sow")}
-            className="mt-4 inline-flex items-center text-xs font-semibold text-amber-600 hover:text-amber-700 group"
-          >
-            <span>View Cohort Waterfall</span>
-            <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
-          </button>
-        </div>
-
-        {/* Finding 4: Four Customer Segments */}
-        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 mb-3">
               <Users className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-sm">Four Mutually Exclusive Segments</h3>
+            <h3 className="font-bold text-slate-900 text-sm">Separating Decliners from Persistently Low</h3>
             <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-              Applying hierarchical priority (<strong className="text-slate-900">D &gt; A &gt; B &gt; C</strong>) to eliminate double-counting partitions the 10,498 decliners into four actionable groups:
+              In the 20,779 fixed cohort, we isolate <strong className="text-slate-900">8,758 acute decliners (A–D)</strong> whose SoW fell by ≥10 pp from the <strong className="text-slate-900">4,830 persistently low cardholders (E)</strong> who never habituated card usage (SoW &lt;10% in both years). These groups require fundamentally distinct treatments.
             </p>
-            <ul className="text-xs space-y-1 mt-2 text-slate-700">
-              <li className="flex justify-between">
-                <span><strong>Seg A:</strong> Wallet Switchers</span>
-                <span className="font-bold">4,931 (46.97%)</span>
-              </li>
-              <li className="flex justify-between">
-                <span><strong>Seg B:</strong> Cash/UPI Switchers</span>
-                <span className="font-bold">2,721 (25.92%)</span>
-              </li>
-              <li className="flex justify-between">
-                <span><strong>Seg C:</strong> Competing Card Switchers</span>
-                <span className="font-bold">1,145 (10.91%)</span>
-              </li>
-              <li className="flex justify-between">
-                <span><strong>Seg D:</strong> High-Value Rapid Decliners</span>
-                <span className="font-bold">1,701 (16.20%)</span>
-              </li>
-            </ul>
           </div>
           <button
             onClick={() => onNavigate("segmentation")}
             className="mt-4 inline-flex items-center text-xs font-semibold text-amber-600 hover:text-amber-700 group"
           >
-            <span>Explore Customer Segments</span>
+            <span>Examine 6-Segment Cohort</span>
             <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
           </button>
         </div>
 
-        {/* Finding 5: The Contractual vs Behavioural Paradox */}
+        {/* Finding 3 */}
         <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
-            <div className="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 mb-3">
+            <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 mb-3">
               <CreditCard className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-sm">Contractual Card Benefits Paradox</h3>
+            <h3 className="font-bold text-slate-900 text-sm">The Contractual Advantage Paradox</h3>
             <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-              HSIC offers unmatched benefits: <strong>5% Grocery</strong> & <strong>3% Electronics</strong> for Prime members, and 1% across all categories with zero annual fees. No competitor card matches these rates. The decline is not driven by product uncompetitiveness, but by frictionless wallet defaults and awareness gaps.
+              HSIC offers unmatched contractual rewards: <strong>5% Grocery</strong> &amp; <strong>3% Electronics</strong> for Prime members with zero annual fees. No competing card matches these rates. Since customers are switching anyway, reward size is not the problem—checkout visibility and payment friction are.
             </p>
           </div>
           <button
@@ -294,22 +320,62 @@ export default function ExecutiveOverview({ onNavigate }: ExecutiveOverviewProps
           </button>
         </div>
 
-        {/* Finding 6: Quantified Opportunity & Financial Models */}
+        {/* Finding 4 */}
+        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 mb-3">
+              <Split className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-slate-900 text-sm">Hypothesis-Driven Tailored Interventions</h3>
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              Wallet switchers (A) receive basket split nudges; Cash/UPI switchers (B) receive one-tap reminders; competing card switchers (C) receive card comparison meters; high-value decliners (D) receive personal outreach; while stable improvers receive zero offers to avoid deadweight spend.
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate("strategies")}
+            className="mt-4 inline-flex items-center text-xs font-semibold text-amber-600 hover:text-amber-700 group"
+          >
+            <span>Review Strategy Blueprints</span>
+            <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
+
+        {/* Finding 5 */}
         <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
             <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 mb-3">
+              <Clock className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-slate-900 text-sm">Rigorous RCT Pilot Protocol</h3>
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              Selecting customers on historical decline introduces regression to the mean. True incremental uplift must be evaluated against an uncontacted 50/50 randomized control group, with a 20% persistence holdout to verify that habit persists after messaging stops.
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate("strategies")}
+            className="mt-4 inline-flex items-center text-xs font-semibold text-amber-600 hover:text-amber-700 group"
+          >
+            <span>View Pilot Protocol</span>
+            <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
+
+        {/* Finding 6 */}
+        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600 mb-3">
               <Target className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-sm">Quantified Recovery Opportunity</h3>
+            <h3 className="font-bold text-slate-900 text-sm">Financial Models &amp; Margin Guardrails</h3>
             <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-              The 10,498 declining cardholders generated <strong className="text-slate-900">{formatINR(EXECUTIVE_OVERVIEW_DATA.decliningCohortSpendFY26)}</strong> in FY2026 MetroMart spend. However, <strong className="text-emerald-700">{formatINR(EXECUTIVE_OVERVIEW_DATA.nonHsicSpendInDecliningCohortFY26)}</strong> was paid via non-HSIC methods. Targeted campaigns can win back 20%–35% of this volume profitably.
+              At an assumed 3.0% gross contribution and 1.393% baseline reward accrual, blended net margin is <strong className="text-slate-900">1.607%</strong>. Full-scale portfolio break-even requires a <strong className="text-slate-900">6.6 pp uplift (~903 units/customer)</strong>. Crucially, Prime Grocery has a negative margin (-2.0%) under standard terms, requiring strict funding verification.
             </p>
           </div>
           <button
             onClick={() => onNavigate("financial-models")}
             className="mt-4 inline-flex items-center text-xs font-semibold text-amber-600 hover:text-amber-700 group"
           >
-            <span>Simulate Financial Models</span>
+            <span>Run Financial Models</span>
             <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
           </button>
         </div>

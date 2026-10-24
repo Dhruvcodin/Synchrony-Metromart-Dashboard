@@ -49,7 +49,7 @@ export default function DataExplorer() {
         { name: "Transaction_Date", type: "datetime", desc: "Date of transaction (YYYY-MM-DD)" },
         { name: "Category_Code", type: "integer", desc: "Lookup key (1-10) for shopping category" },
         { name: "Transaction_Type", type: "string", desc: "Transaction nature ('Sale' or 'Return')" },
-        { name: "Transaction_Amount", type: "decimal", desc: "Gross amount (₹) in INR" },
+        { name: "Transaction_Amount", type: "decimal", desc: "Gross amount in source units" },
         { name: "Payment_Code", type: "integer", desc: "Lookup key (1-5) for payment method" },
         { name: "Number_of_Transactions", type: "integer", desc: "Count of items/transactions (null on returns)" },
       ],
@@ -68,7 +68,7 @@ export default function DataExplorer() {
         { name: "Membership_Type", type: "string", desc: "MetroMart loyalty tier ('Prime' / 'Non-Prime')" },
         { name: "Credit_Card_Open_Date", type: "date", desc: "Date HSIC co-branded card was opened" },
         { name: "Credit_Card_Closed_Date", type: "date", desc: "Date HSIC card was closed (null = still active)" },
-        { name: "Credit_Card_Limit", type: "decimal", desc: "Assigned credit line (₹100,000 to ₹300,000)" },
+        { name: "Credit_Card_Limit", type: "decimal", desc: "Assigned credit line (100,000 to 300,000 units)" },
         { name: "Credit_Card_APR", type: "decimal", desc: "Annual percentage rate (28.0% to 35.0%)" },
       ],
     },
@@ -352,7 +352,7 @@ export default function DataExplorer() {
                   <th className="px-4 py-3">Type</th>
                   <th className="px-4 py-3">Category</th>
                   <th className="px-4 py-3">Payment Method</th>
-                  <th className="px-4 py-3 text-right">Amount (₹)</th>
+                  <th className="px-4 py-3 text-right">Amount (units)</th>
                   <th className="px-4 py-3 text-center">Tx Count</th>
                 </tr>
               )}
@@ -364,7 +364,7 @@ export default function DataExplorer() {
                   <th className="px-4 py-3">Membership</th>
                   <th className="px-4 py-3">Card Open Date</th>
                   <th className="px-4 py-3">Card Closed Date</th>
-                  <th className="px-4 py-3 text-right">Credit Limit (₹)</th>
+                  <th className="px-4 py-3 text-right">Credit Limit (units)</th>
                   <th className="px-4 py-3 text-right">APR (%)</th>
                 </tr>
               )}
